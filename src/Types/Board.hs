@@ -3,6 +3,7 @@
 module Types.Board where
 
 import Types.Column
+import Types.Json
 
 import Data.Aeson
 import Data.ByteString.Lazy.Char8 (unpack)
@@ -20,11 +21,12 @@ instance FromJSON BoardId where
                                                 }
 
 newtype Board =
-    Board { columns :: Vector Column
+    Board { b_columns :: Vector Column
           } deriving Generic
 
 instance ToJSON Board where
-    toJSON = genericToJSON defaultOptions { unwrapUnaryRecords = True
+    toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop
+                                          , unwrapUnaryRecords = True
                                           }
 
 instance Show Board where

@@ -1,7 +1,11 @@
 
 function ticketOnDragStart(event) {
-    event.dataTransfer
-         .setData('text/utf8', event.target.id);
+
+    const ticket = event.target.id;
+    const from = document.getElementById(ticket).columnId;
+
+    event.dataTransfer.setData('ticket', ticket);
+    event.dataTransfer.setData('from', from);
 }
 
 function phaseAllowDrop(event) {
@@ -11,13 +15,14 @@ function phaseAllowDrop(event) {
 function phaseDropTicket(event) {
     event.preventDefault();
 
-    const sourceId = event.dataTransfer.getData('text/utf8')
-    const destId   = event.target.id;
-    console.log("drop ticket: " + sourceId + " -> " + destId);
+    const fromId   = event.dataTransfer.getData('from')
+    const toId     = event.target.id;  
+    const ticketId = event.dataTransfer.getData('ticket')
 
-    const from = document.getElementById(sourceId).parentElement;
-    const to   = document.getElementById(destId).parentElement;
-    to.appendChild(from);
+    // Real call - TODO check return
+    moveTicket(fromId, toId, ticketId);
+
+    fetchBoard();
 }
 
 function columnHeaderAsElement(column) {
@@ -29,7 +34,7 @@ function columnHeaderAsElement(column) {
     li = document.createElement('li');
 
     div = document.createElement('div');
-    div.id = column.name;
+    div.id = column.id;
     div.addEventListener('dragover', phaseAllowDrop);
     div.addEventListener('drop', phaseDropTicket);
     div.classList.add('phase');
@@ -42,19 +47,25 @@ function columnHeaderAsElement(column) {
 }
 
 function buildColumnHeaders(board) {
-    for (const columnNo in board) {
-        document
-          .getElementById('header')
-          .appendChild(columnHeaderAsElement(board[columnNo]));
-    }
+
+  document
+      .getElementById('header')
+      .textContent = '';
+
+  for (const columnNo in board) {
+    document
+      .getElementById('header')
+      .appendChild(columnHeaderAsElement(board[columnNo]));
+  }
 }
 
-function ticketAsElement(jsonTicket) {
+function ticketAsElement(columnId, jsonTicket) {
 
     li = document.createElement('li');
 
     div = document.createElement('div');
     div.id = jsonTicket.id;
+    div.columnId = columnId;
     div.draggable = 'true';
     div.addEventListener('dragstart', ticketOnDragStart);
     div.classList.add('ticket');
@@ -78,14 +89,34 @@ const fetchBoard = async () => {
 
 const fetchColumns = async (board) => {
   for (const columnNo in board) {
-    const response = await fetch('/column?columnId=' + board[columnNo].id);
+    const columnId = board[columnNo].id;
+    const response = await fetch('/column?columnId=' + columnId);
     const column   = await response.json();
     for (const ticketNo in column) {
       document
         .getElementById('list_' + board[columnNo].name)
-        .appendChild(ticketAsElement(column[ticketNo]));
+        .appendChild(ticketAsElement(columnId, column[ticketNo]));
     }
   }
+}
+
+const moveTicket = async (from, to, ticket) => {
+
+  const body = { 'board':  'some-board'
+               , 'from':   from
+               , 'to':     to
+               , 'ticket': ticket
+               };
+
+  const response = await fetch('/ticket/move', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  console.log(response.status);
 }
 
 const createTicket = async (name, content) => {

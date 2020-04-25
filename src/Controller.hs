@@ -8,6 +8,7 @@ import Storage.StorageApi
 import Types.Board
 import Types.Column
 import Types.CreateTicket
+import Types.MoveTicket
 import Types.Ticket
 
 import Control.Monad.IO.Class   (liftIO)
@@ -24,6 +25,8 @@ type DoAPI =
 
    :<|> "ticket" :> "create" :> ReqBody '[JSON] CreateTicket :> Post '[JSON] TicketId
 
+   :<|> "ticket" :> "move" :> ReqBody '[JSON] MoveTicket :> Post '[JSON] ()
+
    :<|> "static" :> Raw
 
 server1 :: StorageApi
@@ -35,6 +38,8 @@ server1 storageApi =
      :<|> liftIO . routeQueryColumn
 
      :<|> liftIO . routeCreateTicket
+
+     :<|> liftIO . routeMoveTicket
 
      :<|> serveDirectoryWebApp "frontend"
 
@@ -48,6 +53,10 @@ server1 storageApi =
         routeCreateTicket (CreateTicket boardName name body) = do
             Just cid <- getDefaultColumn storageApi boardName
             createTicket storageApi cid name body
+
+        routeMoveTicket (MoveTicket board from to ticket) = do
+            _ <- moveTicket storageApi board from to ticket
+            pure ()
 
 doAPI :: Proxy DoAPI
 doAPI = Proxy

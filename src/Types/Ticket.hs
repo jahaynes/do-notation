@@ -2,8 +2,9 @@
 
 module Types.Ticket where
 
+import Types.Json
+
 import Data.Aeson
-import Data.List.Split (splitOn)
 import Data.Text       (Text)
 import Data.UUID       (UUID)
 import GHC.Generics    (Generic)
@@ -16,7 +17,10 @@ instance Show TicketId where
     show (TicketId tid) = show tid
 
 instance ToJSON TicketId where
-    toJSON = genericToJSON defaultOptions { unwrapUnaryRecords = True }
+    toJSON (TicketId u) = toJSON u
+
+instance FromJSON TicketId where
+    parseJSON u = TicketId <$> parseJSON u
 
 data Ticket =
     Ticket { t_id      :: !TicketId
@@ -28,6 +32,3 @@ instance ToJSON Ticket where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop
                                           , unwrapUnaryRecords = True
                                           }
-
-chop :: String -> String
-chop = concat . drop 1 . splitOn "_"

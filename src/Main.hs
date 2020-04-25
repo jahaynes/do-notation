@@ -8,7 +8,6 @@ import Storage.Cassandra
 import Types.Board
 import Types.Column
 
-import Data.UUID
 import Safe               (readEitherSafe)
 import System.Environment (lookupEnv)
 
@@ -21,15 +20,12 @@ main = do
     storageApi <- create cassandraPort cassandraHosts
 
     let boardId = BoardId "some-board"
-    ci1 <- createBoardColumn storageApi boardId 1 (ColumnName "wish-list")
+    _   <- createBoardColumn storageApi boardId 1 (ColumnName "wish-list")
     ci2 <- createBoardColumn storageApi boardId 2 (ColumnName "in-progress")
-    ci3 <- createBoardColumn storageApi boardId 3 (ColumnName "done")
-    print =<< getBoard storageApi boardId
-    print =<< getDefaultColumn storageApi boardId
-    ti1 <- createTicket storageApi ci2 "ticket name 1" "ticket content 1"
-    ti2 <- createTicket storageApi ci2 "ticket name 2" "ticket content 2"
-    ti3 <- createTicket storageApi ci2 "ticket name 3" "ticket content 3"
-    print =<< getColumn storageApi ci2
+    _   <- createBoardColumn storageApi boardId 3 (ColumnName "done")
+    _   <- createTicket storageApi ci2 "ticket name 1" "ticket content 1"
+    _   <- createTicket storageApi ci2 "ticket name 2" "ticket content 2"
+    _   <- createTicket storageApi ci2 "ticket name 3" "ticket content 3"
 
     runServer storageApi
 

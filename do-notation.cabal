@@ -17,6 +17,8 @@ executable do-notation
                        Types.Column,
                        Types.CreateTicket,
                        Types.Board,
+                       Types.Json,
+                       Types.MoveTicket,
                        Types.Ticket
 
   build-depends:       aeson, base, bytestring, containers, cql, cql-io, network, safe, servant, servant-server, split, text, time, unordered-containers, uuid, vector, vector-algorithms, wai, warp

@@ -2,10 +2,11 @@
 
 module Types.Column where
 
+import Types.Json
+
 import Data.Aeson
 import Data.Aeson.Types
 import Data.ByteString.Lazy.Char8 (unpack)
-import Data.List.Split            (splitOn)
 import Data.Text                  (Text)
 import Data.UUID                  (UUID)
 import GHC.Generics               (Generic)
@@ -30,6 +31,9 @@ newtype ColumnId =
 instance ToJSON ColumnId where
     toJSON (ColumnId i) = toJSON i
 
+instance FromJSON ColumnId where
+    parseJSON u = ColumnId <$> parseJSON u
+
 instance Show ColumnId where
     show (ColumnId cid) = show cid
 
@@ -42,6 +46,3 @@ instance ToJSON ColumnName where
 
 instance ToJSONKey ColumnName where
     toJSONKey = toJSONKeyText cn_value
-
-chop :: String -> String
-chop = concat . drop 1 . splitOn "_"

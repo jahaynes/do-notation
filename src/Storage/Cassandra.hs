@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 
 module Storage.Cassandra where
 
@@ -9,13 +9,11 @@ import Types.Ticket
 
 import Prelude hiding (init)
 
-import           Control.Monad               (forM, void)
-import           Control.Monad.IO.Class      (liftIO)
+import           Control.Monad               (void)
 import           Data.Int                    (Int32)
 import           Data.Text                   (Text)
 import qualified Data.Text.Lazy        as TL
 
-import           Data.Vector                 (Vector)
 import qualified Data.Vector           as V
 import           Data.Vector.Algorithms.Heap (sort)
 
@@ -51,12 +49,12 @@ params p = QueryParams
 getBoardImpl :: ClientState -> BoardId -> IO Board
 getBoardImpl c (BoardId boardId) =
     runClient c $ do
-        result <- query cqlGetBoard (defQueryParams One (Identity boardId))
+        columns <- query cqlGetBoard (defQueryParams One (Identity boardId))
         pure . Board
              . V.map (\(_, cn, ci) -> Column (ColumnName cn) (ColumnId ci))
              . V.modify sort
              . V.fromList
-             $ result
+             $ columns
     where
     cqlGetBoard :: PrepQuery R (Identity Text) (Int32, Text, UUID)
     cqlGetBoard =
@@ -66,11 +64,10 @@ getBoardImpl c (BoardId boardId) =
 
 getDefaultColumnImpl :: ClientState -> BoardId -> IO (Maybe ColumnId)
 getDefaultColumnImpl c (BoardId boardId) =
-    runClient c $ do
-        mRow <- query1 cqlGetDefaultColumn (params (Identity boardId))
-        pure $ case mRow of
-            Nothing             -> Nothing
-            Just (Identity row) -> Just (ColumnId row)
+    runClient c $
+        query1 cqlGetDefaultColumn (params (Identity boardId)) >>= \case
+            Nothing             -> pure $ Nothing
+            Just (Identity row) -> pure $ Just (ColumnId row)
 
     where
     cqlGetDefaultColumn :: PrepQuery R (Identity Text) (Identity UUID)
@@ -98,13 +95,6 @@ createTicketImpl c (ColumnId cid) name content = do
     runClient c $ write cqlCreateTicket (params (cid, freshTid, name, content))
     pure $ TicketId freshTid
 
-    where
-    cqlCreateTicket :: PrepQuery W (UUID, UUID, Text, Text) ()
-    cqlCreateTicket =
-        " INSERT INTO do_notation.ticket       \
-        \ (columnid, id, name, content) VALUES \
-        \ (       ?,  ?,    ?,       ?)        "
-
 getColumnImpl :: ClientState -> ColumnId -> IO [Ticket]
 getColumnImpl c (ColumnId cid) =
     runClient c $ map toTicket <$> query cqlGetColumn (params (Identity cid))
@@ -116,6 +106,44 @@ getColumnImpl c (ColumnId cid) =
         " SELECT id, content, name \
         \ FROM do_notation.ticket  \
         \ WHERE columnId = ?       "
+
+cqlCreateTicket :: PrepQuery W (UUID, UUID, Text, Text) ()
+cqlCreateTicket =
+    " INSERT INTO do_notation.ticket       \
+    \ (columnid, id, name, content) VALUES \
+    \ (       ?,  ?,    ?,       ?)        "
+
+moveTicketImpl :: ClientState -> BoardId -> ColumnId -> ColumnId -> TicketId -> IO ()
+moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
+    | from == to = pure ()
+    | otherwise = runClient c $ do
+        (name, content) <- getTicket
+        putTicket name content
+        removeFromColumn
+
+    where
+    getTicket :: Client (Text, Text)
+    getTicket = query1 cqlGetTicket (params (from, tid)) >>= \case
+        Nothing -> error "no such ticket"
+        Just x  -> pure x
+
+    putTicket :: Text -> Text -> Client ()
+    putTicket name content = write cqlCreateTicket (params (to, tid, name, content))
+
+    removeFromColumn :: Client ()
+    removeFromColumn = write cqlRemoveFromColumn (params (from, tid))
+
+    cqlRemoveFromColumn :: PrepQuery W (UUID, UUID) ()
+    cqlRemoveFromColumn =
+        " DELETE FROM do_notation.ticket \
+        \ WHERE columnid = ? and id = ?  " 
+
+    cqlGetTicket :: PrepQuery R (UUID, UUID) (Text, Text)
+    cqlGetTicket =
+        " SELECT name, content    \
+        \ FROM do_notation.ticket \
+        \ WHERE columnid = ?      \
+        \ AND id = ?              "
 
 create :: PortNumber -> [String] -> IO StorageApi
 create    _       [] = error "FATAL.  No Cassandra hosts supplied"
@@ -137,6 +165,7 @@ create port (h:osts) = do
 
                       , getColumn         = getColumnImpl c
                       , createTicket      = createTicketImpl c
+                      , moveTicket        = moveTicketImpl c
                       }
 
     where

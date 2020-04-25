@@ -3,11 +3,10 @@
 module Types.CreateTicket where
 
 import Types.Board
+import Types.Json
 
 import Data.Aeson
-import Data.List.Split (splitOn)
 import Data.Text       (Text)
-import Data.UUID       (UUID)
 import GHC.Generics    (Generic)
 
 data CreateTicket =
@@ -19,6 +18,3 @@ data CreateTicket =
 instance FromJSON CreateTicket where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
-
-chop :: String -> String
-chop = concat . drop 1 . splitOn "_"
