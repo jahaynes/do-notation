@@ -15,6 +15,11 @@ ul {
   width: 25%;
 }
 
+.lblbtn {
+  margin-top: 1em;
+  display: block;
+}
+
 .phase {
   background-color: salmon;
   height: 33px;
@@ -22,7 +27,7 @@ ul {
 
 .ticket {
   background-color: beige;
-  height: 100px;
+  height: 6em;
 }
 
 .noselect {
