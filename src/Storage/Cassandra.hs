@@ -66,7 +66,7 @@ getDefaultColumnImpl :: ClientState -> BoardId -> IO (Maybe ColumnId)
 getDefaultColumnImpl c (BoardId boardId) =
     runClient c $
         query1 cqlGetDefaultColumn (params (Identity boardId)) >>= \case
-            Nothing             -> pure $ Nothing
+            Nothing             -> pure Nothing
             Just (Identity row) -> pure $ Just (ColumnId row)
 
     where

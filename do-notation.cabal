@@ -21,6 +21,6 @@ executable do-notation
                        Types.MoveTicket,
                        Types.Ticket
 
-  build-depends:       aeson, base, bytestring, containers, cql, cql-io, network, safe, servant, servant-server, split, text, time, unordered-containers, uuid, vector, vector-algorithms, wai, warp
+  build-depends:       aeson, base, bytestring, cql, cql-io, network, safe, servant-server, split, text, uuid, vector, vector-algorithms, warp
   hs-source-dirs:      src
   default-language:    Haskell2010
