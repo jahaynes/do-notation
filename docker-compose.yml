@@ -1,0 +1,23 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: scylladb/scylla
+    command: --smp 1 --memory 256M --developer-mode=1
+    restart: always
+    volumes:
+      - /var/lib/scylla:/var/lib/scylla
+    ports:
+      - "9042:9042"
+
+  backend:
+    image: donotation/donotation:v0.0.1
+    environment:
+      CASS_HOSTS: "[\"db\"]"
+      CASS_PORT: 9042
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "db"
