@@ -1,16 +1,18 @@
 {-# LANGUAGE DataKinds
+           , LambdaCase
            , OverloadedStrings
            , TypeOperators #-}
 
 module Controller (runServer) where
 
+import Requests.CreateTicket
+import Requests.MoveTicket
 import Storage.StorageApi
 import Types.Board
 import Types.Column
-import Types.CreateTicket
-import Types.MoveTicket
 import Types.Ticket
 
+import Control.Monad            (void)
 import Control.Monad.IO.Class   (liftIO)
 import Data.Text                (Text)
 import Data.UUID                (UUID)
@@ -45,18 +47,18 @@ server1 storageApi =
 
         where
         routeQueryBoard Nothing          = error "routeQueryBoard Nothing"
-        routeQueryBoard (Just boardName) = getBoard storageApi (BoardId boardName)
+        routeQueryBoard (Just boardName) = getBoard storageApi (BoardName boardName)
 
         routeQueryColumn Nothing         = error "routeQueryColumn Nothing"
         routeQueryColumn (Just columnId) = getColumn storageApi (ColumnId columnId)
 
-        routeCreateTicket (CreateTicket boardName name body) = do
-            Just cid <- getDefaultColumn storageApi boardName
-            createTicket storageApi cid name body
+        routeCreateTicket (CreateTicket boardName name body) =
+            getDefaultColumn storageApi boardName >>= \case
+                Just cid -> createTicket storageApi cid name body
+                Nothing  -> error "No default column"
 
-        routeMoveTicket (MoveTicket board from to ticket) = do
-            _ <- moveTicket storageApi board from to ticket
-            pure ()
+        routeMoveTicket (MoveTicket board from to ticket) =
+            void $ moveTicket storageApi board from to ticket
 
 doAPI :: Proxy DoAPI
 doAPI = Proxy

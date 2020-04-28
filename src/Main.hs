@@ -4,7 +4,10 @@ module Main where
 
 import Controller
 import Storage.StorageApi
-import Storage.Cassandra
+import Storage.Cassandra.Connection
+import Storage.Cassandra.Queries
+import Storage.Cassandra.Keyspace
+import Storage.Cassandra.Tables
 import Types.Board
 import Types.Column
 
@@ -15,19 +18,25 @@ main :: IO ()
 main = do
 
     cassandraPort  <- parseEnv "CASS_PORT"
+
     cassandraHosts <- parseEnv "CASS_HOSTS"
 
-    storageApi <- create cassandraPort cassandraHosts
+    storageApi <- do 
+        c <- create cassandraPort cassandraHosts
+        createKeyspace c 2
+        createTables c
+        pure $ createApi c
 
-    let boardId = BoardId "some-board"
-    _   <- createBoardColumn storageApi boardId 1 (ColumnName "wish-list")
-    ci2 <- createBoardColumn storageApi boardId 2 (ColumnName "in-progress")
-    _   <- createBoardColumn storageApi boardId 3 (ColumnName "done")
+    let boardName = BoardName "some-board"
+    _   <- createBoardColumn storageApi boardName 1 (ColumnName "wish-list")
+    ci2 <- createBoardColumn storageApi boardName 2 (ColumnName "in-progress")
+    _   <- createBoardColumn storageApi boardName 3 (ColumnName "done")
     _   <- createTicket storageApi ci2 "ticket name 1" "ticket content 1"
     _   <- createTicket storageApi ci2 "ticket name 2" "ticket content 2"
     _   <- createTicket storageApi ci2 "ticket name 3" "ticket content 3"
 
     runServer storageApi
+    pure ()
 
 parseEnv :: Read a => String -> IO a
 parseEnv key = get . env <$> lookupEnv key

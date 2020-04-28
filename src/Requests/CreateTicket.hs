@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Types.CreateTicket where
+module Requests.CreateTicket where
 
 import Types.Board
 import Types.Json
@@ -10,7 +10,7 @@ import Data.Text       (Text)
 import GHC.Generics    (Generic)
 
 data CreateTicket =
-    CreateTicket { ct_board   :: !BoardId
+    CreateTicket { ct_board   :: !BoardName
                  , ct_name    :: !Text
                  , ct_content :: !Text
                  } deriving Generic

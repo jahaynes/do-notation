@@ -11,11 +11,11 @@ import Data.Text                  (Text)
 import Data.Vector                (Vector)
 import GHC.Generics               (Generic)
 
-newtype BoardId =
-    BoardId { bi_value :: Text
+newtype BoardName =
+    BoardName { bi_value :: Text
             } deriving Generic
 
-instance FromJSON BoardId where
+instance FromJSON BoardName where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True
                                                 }

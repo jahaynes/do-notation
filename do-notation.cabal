@@ -12,13 +12,17 @@ executable do-notation
   main-is:             Main.hs
   ghc-options:         -Wall -O3
   other-modules:       Controller,
+                       Requests.CreateTicket,
+                       Requests.MoveTicket,
                        Storage.StorageApi,
-                       Storage.Cassandra,
+                       Storage.Cassandra.Common,
+                       Storage.Cassandra.Connection,
+                       Storage.Cassandra.Keyspace,
+                       Storage.Cassandra.Queries,
+                       Storage.Cassandra.Tables,
                        Types.Column,
-                       Types.CreateTicket,
                        Types.Board,
                        Types.Json,
-                       Types.MoveTicket,
                        Types.Ticket
 
   build-depends:       aeson, base, bytestring, cql, cql-io, network, safe, servant-server, split, text, uuid, vector, vector-algorithms, warp

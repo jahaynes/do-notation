@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Types.MoveTicket where
+module Requests.MoveTicket where
 
 import Types.Board
 import Types.Column
@@ -11,7 +11,7 @@ import Data.Aeson
 import GHC.Generics    (Generic)
 
 data MoveTicket =
-    MoveTicket { mt_board  :: !BoardId
+    MoveTicket { mt_board  :: !BoardName
                , mt_from   :: !ColumnId
                , mt_to     :: !ColumnId
                , mt_ticket :: !TicketId
