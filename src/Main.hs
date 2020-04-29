@@ -3,30 +3,34 @@
 module Main where
 
 import Controller
-import Storage.StorageApi
 import Storage.Cassandra.Connection
 import Storage.Cassandra.Queries
 import Storage.Cassandra.Keyspace
 import Storage.Cassandra.Tables
+import Storage.Sqlite
+import Storage.StorageApi
 import Types.Board
 import Types.Column
 
 import Safe               (readEitherSafe)
 import System.Environment (lookupEnv)
 
-main :: IO ()
-main = do
+data Implementation = Sqlite
+                    | Cassandra
 
+getApi :: Implementation -> IO StorageApi
+getApi Sqlite = createSqlite "do-notation.db"
+getApi Cassandra = do
     cassandraPort  <- parseEnv "CASS_PORT"
-
     cassandraHosts <- parseEnv "CASS_HOSTS"
-
-    storageApi <- do 
-        c <- create cassandraPort cassandraHosts
+    create cassandraPort cassandraHosts >>= \c -> do
         createKeyspace c 2
         createTables c
         pure $ createApi c
 
+main :: IO ()
+main = do
+    storageApi <- getApi Sqlite
     let boardName = BoardName "some-board"
     _   <- createBoardColumn storageApi boardName 1 (ColumnName "wish-list")
     ci2 <- createBoardColumn storageApi boardName 2 (ColumnName "in-progress")

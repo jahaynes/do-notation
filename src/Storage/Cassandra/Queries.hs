@@ -58,10 +58,10 @@ getDefaultColumnImpl c (BoardName boardName) =
         \ FROM do_notation.board \
         \ WHERE name = ?         "
 
-createBoardColumnImpl :: ClientState -> BoardName -> Int32 -> ColumnName -> IO ColumnId
+createBoardColumnImpl :: ClientState -> BoardName -> Int -> ColumnName -> IO ColumnId
 createBoardColumnImpl c (BoardName boardName) position (ColumnName name) = do
     freshCid <- U.nextRandom
-    runClient c $ write cqlCreateBoardColumn (params (boardName, position, name, freshCid))
+    runClient c $ write cqlCreateBoardColumn (params (boardName, fromIntegral position, name, freshCid))
     pure $ ColumnId freshCid
 
     where
