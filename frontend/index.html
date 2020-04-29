@@ -7,21 +7,16 @@
 </head>
 <body>
 
-  <section id = "header" class = "container">
+  <section id="tickets" class="tickets-container container">
   </section>
 
-  <hr/>
-
-  <section class = "container">
+  <section class="create-tickets container">
     <form>
-      <label for='inp_name' class='lblbtn'>name</label>
-      <input id ='inp_name'></input>
-      <label for='inp_content' class='lblbtn'>content</label>
-      <input id ='inp_content'></input>
-      <input type    = button
-             value   = 'Create Ticket'
-             onclick = 'create(event)'
-             class   ='lblbtn'></input>
+      <label for='inp_name' class='lblfield'>name</label>
+      <input id='inp_name'></input>
+      <label for='inp_content' class='lblfield'>content</label>
+      <textarea id='inp_content'></textarea>
+      <input type=button value='Create Ticket' onclick='create(event)' class='lblbtn'></input>
     </form>
   </section>
 </body>

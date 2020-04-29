@@ -23,6 +23,8 @@ function columnHeaderAsElement(column) {
 function ticketAsElement(columnId, jsonTicket) {
 
     li = document.createElement('li');
+    li.classList.add('ticket-li');
+    
 
     div = document.createElement('div');
     div.id = jsonTicket.id;
@@ -41,12 +43,9 @@ function ticketAsElement(columnId, jsonTicket) {
 }
 
 function buildColumnHeaders(board) {
-
-    const header = document.getElementById('header');
-
-    header.textContent = '';
-
+    const tickets = document.getElementById('tickets');
+    tickets.textContent = '';
     for (const columnNo in board) {
-        header.appendChild(columnHeaderAsElement(board[columnNo]));
+        tickets.appendChild(columnHeaderAsElement(board[columnNo]));
     }
 }

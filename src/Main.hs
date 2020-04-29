@@ -31,6 +31,11 @@ getApi Cassandra = do
 main :: IO ()
 main = do
     storageApi <- getApi Sqlite
+    -- sampleData storageApi
+    runServer storageApi
+    pure ()
+
+sampleData storageApi = do
     let boardName = BoardName "some-board"
     _   <- createBoardColumn storageApi boardName 1 (ColumnName "wish-list")
     ci2 <- createBoardColumn storageApi boardName 2 (ColumnName "in-progress")
@@ -38,8 +43,6 @@ main = do
     _   <- createTicket storageApi ci2 "ticket name 1" "ticket content 1"
     _   <- createTicket storageApi ci2 "ticket name 2" "ticket content 2"
     _   <- createTicket storageApi ci2 "ticket name 3" "ticket content 3"
-
-    runServer storageApi
     pure ()
 
 parseEnv :: Read a => String -> IO a
