@@ -24,6 +24,7 @@ createApi c =
                , getDefaultColumn  = getDefaultColumnImpl c
                , getColumn         = getColumnImpl c
                , createTicket      = createTicketImpl c
+               , getTicket         = getTicketImpl c
                , moveTicket        = moveTicketImpl c
                }
 
@@ -99,16 +100,11 @@ moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -
 moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
     | from == to = pure ()
     | otherwise = runClient c $ do
-        (name, content) <- getTicket
+        Ticket _ name content <- getTicketImpl' (ColumnId from) (TicketId tid)
         putTicket name content
         removeFromColumn
 
     where
-    getTicket :: Client (Text, Text)
-    getTicket = query1 cqlGetTicket (params (from, tid)) >>= \case
-        Nothing -> error "no such ticket"
-        Just x  -> pure x
-
     putTicket :: Text -> Text -> Client ()
     putTicket name content = write cqlCreateTicket (params (to, tid, name, content))
 
@@ -120,9 +116,17 @@ moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
         " DELETE FROM do_notation.ticket \
         \ WHERE columnid = ? and id = ?  " 
 
-    cqlGetTicket :: PrepQuery R (UUID, UUID) (Text, Text)
-    cqlGetTicket =
-        " SELECT name, content    \
-        \ FROM do_notation.ticket \
-        \ WHERE columnid = ?      \
-        \ AND id = ?              "
+getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO Ticket
+getTicketImpl c cid tid = runClient c $ getTicketImpl' cid tid
+
+getTicketImpl' :: ColumnId -> TicketId -> Client Ticket
+getTicketImpl' (ColumnId cid) (TicketId tid) = query1 cqlGetTicket (params (cid, tid)) >>= \case
+    Nothing -> error "no such ticket"
+    Just (id_, name, content) -> pure $ Ticket (TicketId id_) name content
+
+cqlGetTicket :: PrepQuery R (UUID, UUID) (UUID, Text, Text)
+cqlGetTicket =
+    " SELECT id, name, content \
+    \ FROM do_notation.ticket  \
+    \ WHERE columnid = ?       \
+    \ AND id = ?               "

@@ -55,4 +55,11 @@ const fetchColumns =
                 columnName.appendChild(ticketAsElement(columnId, column[ticketNo]));
             }
         }
-    }    
+    }
+
+const fetchTicket =
+    async (columnId, ticketId, f) => {
+        const response = await fetch('/ticket/get?columnId=' + columnId + "&ticketId=" + ticketId);
+        const json = await response.json();
+        f(json);
+    }

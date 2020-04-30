@@ -7,15 +7,15 @@ function columnHeaderAsElement(column) {
 
     li = document.createElement('li');
 
-    div = document.createElement('div');
-    div.id = column.id;
-    div.addEventListener('dragover', phaseAllowDrop);
-    div.addEventListener('drop', phaseDropTicket);
-    div.classList.add('phase');
-    div.classList.add('noselect');
-    div.textContent = column.name; // TODO pretty name
+    h2 = document.createElement('h2');
+    h2.id = column.id;
+    h2.addEventListener('dragover', columnHeaderAllowDrop);
+    h2.addEventListener('drop', columnHeaderDropTicket);
 
-    li.appendChild(div);
+    h2.classList.add('noselect');
+    h2.textContent = column.name; // TODO pretty name
+
+    li.appendChild(h2);
     ul.appendChild(li);
     return ul;
 }
@@ -23,16 +23,15 @@ function columnHeaderAsElement(column) {
 function ticketAsElement(columnId, jsonTicket) {
 
     li = document.createElement('li');
+    li.id = jsonTicket.id;
+    li.columnId = columnId;
     li.classList.add('ticket-li');
+    li.draggable = 'true';
+    li.addEventListener('dragstart', ticketOnDragStart);
+    li.addEventListener('click', ticketSelect);
     
-
     div = document.createElement('div');
-    div.id = jsonTicket.id;
-    div.columnId = columnId;
-    div.draggable = 'true';
-    div.addEventListener('dragstart', ticketOnDragStart);
-    div.classList.add('ticket');
-
+    
     p = document.createElement('p');
     p.classList.add('noselect');
     p.textContent = jsonTicket.content;

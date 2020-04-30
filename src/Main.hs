@@ -31,7 +31,7 @@ getApi Cassandra = do
 main :: IO ()
 main = do
     storageApi <- getApi Sqlite
-    -- sampleData storageApi
+    sampleData storageApi
     runServer storageApi
     pure ()
 

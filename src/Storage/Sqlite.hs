@@ -26,6 +26,7 @@ createSqlite filename = do
                       , getBoard          = getBoardImpl c
                       , getDefaultColumn  = getDefaultColumnImpl c
                       , createTicket      = createTicketImpl c
+                      , getTicket         = getTicketImpl c
                       , getColumn         = getColumnImpl c
                       , moveTicket        = moveTicketImpl c
                       } 
@@ -102,17 +103,11 @@ moveTicketImpl :: Connection -> BoardName -> ColumnId -> ColumnId -> TicketId ->
 moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
     | from == to = pure ()
     | otherwise = do
-        (name, content) <- getTicket
+        Ticket _ name content <- getTicketImpl c (ColumnId from) (TicketId tid)
         putTicket name content
         removeFromColumn
 
     where
-    getTicket :: IO (Text, Text)
-    getTicket = query c sqlGetTicket (toText from, toText tid) >>= \case
-        []  -> error "no such ticket"
-        [x] -> pure x
-        _   -> error "Too many tickets"
-
     putTicket :: Text -> Text -> IO ()
     putTicket name content = execute c sqlCreateTicket (toText to, toText tid, name, content)
 
@@ -125,12 +120,19 @@ moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
         \ WHERE columnid = ? \
         \ AND id = ?         " 
 
-    sqlGetTicket :: Query
-    sqlGetTicket =
-        " SELECT name, content \
-        \ FROM ticket          \
-        \ WHERE columnid = ?   \
-        \ AND id = ?           "
+getTicketImpl :: Connection -> ColumnId -> TicketId -> IO Ticket
+getTicketImpl c (ColumnId cid) (TicketId tid) =
+    query c sqlGetTicket (toText cid, toText tid) >>= \case
+        []                     -> error $ "no such ticket: " ++ show (cid, tid)
+        [(id_, name, content)] -> pure $ Ticket (TicketId . fromJust . fromText $ id_) name content
+        _                      -> error "Too many tickets"
+
+sqlGetTicket :: Query
+sqlGetTicket =
+    " SELECT id, name, content \
+    \ FROM ticket              \
+    \ WHERE columnid = ?       \
+    \ AND id = ?               "
 
 createSqlTables :: Connection -> IO ()
 createSqlTables c = do

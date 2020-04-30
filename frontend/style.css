@@ -3,23 +3,15 @@ body {
   padding: 0;
 }
 
-section {
-  margin: 0;
-  padding: 1em 0;
-}
-
 .container {
   padding: 0 1em;
   margin: 0 auto;
 }
 
-/* Tickets section */
-
 .tickets-container {
   background-color: rosybrown;
   display: flex;
   padding-bottom: 1em;
-
 }
 
 #tickets ul {
@@ -37,16 +29,10 @@ ul:first-of-type {
   /* todo: redo for responsiveness */
 }
 
-.phase {
-  background-color: salmon;
-  min-height: 2em;
-  font-size: 1.3em;
-  /* should be semantically a heading */
-}
-
-/* individual ticket */
-
 .ticket-li {
+  background-color: beige;
+  cursor: pointer;
+  height: 6em;
   transition: 0.2s;
   border: 0.4em solid beige;
   border-radius: 0.3em;
@@ -54,39 +40,34 @@ ul:first-of-type {
   position: relative;
 }
 
-.ticket {
-  background-color: beige;
-  height: 6em;
-}
-
 .ticket-li p {
-  margin-top: 0;
+  margin: 1em 1em;
 }
-
-/* Create ticket section */
 
 .create-tickets {
-  display: block;
+  display: none;  /* none */
   background-color:sandybrown;
   padding-top: 1em;
   padding-bottom: 1em;
 }
 
-.create-tickets.inactive {
-  display: none;
+.visible {
+  display: block;
 }
 
 .create-tickets input, .create-tickets textarea {
   border: none;
   background-color: beige;
   width: 15rem;
+  min-height: 2em;
+  padding: 0.25em;
   display: block;
   font-size: 1rem;
 }
 
 .create-tickets textarea {
+  width: 47.125em;
   min-height: 13em;
-  min-width: 50%;
 }
 
 .create-tickets .lblfield {
@@ -111,6 +92,19 @@ ul:first-of-type {
 
 .create-tickets .lblbtn:focus, .create-tickets .lblbtn:hover {
   background-color: red;
+}
+
+#ticket-commands {
+  display: flex;
+  margin-top: 1em;
+}
+
+#ticket-commands input {
+  margin: 0 0 0 1em;
+}
+
+#ticket-commands input:first-of-type {
+  margin-left: 0;
 }
 
 .noselect {

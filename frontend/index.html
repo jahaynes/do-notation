@@ -7,16 +7,25 @@
 </head>
 <body>
 
+  <section id="controls" class="controls-container container">
+    <input type=button value='Create Ticket' onclick='showCreate(event)' class='lblbtn'></input>
+  </section>
+  
   <section id="tickets" class="tickets-container container">
   </section>
 
-  <section class="create-tickets container">
+  <section id="create-tickets" class="create-tickets container">
     <form>
       <label for='inp_name' class='lblfield'>name</label>
       <input id='inp_name'></input>
       <label for='inp_content' class='lblfield'>content</label>
       <textarea id='inp_content'></textarea>
-      <input type=button value='Create Ticket' onclick='create(event)' class='lblbtn'></input>
+      <div id='ticket-commands'>
+        <input type=button value='Add Ticket'    onclick='create(event)'          class='lblbtn'></input>
+        <input type=button value='Update Ticket' onclick='update(event)'          class='lblbtn'></input>
+        <input type=button value='Cancel'        onclick='cancelTicketAdd(event)' class='lblbtn'></input>
+        <input type=button value='Delete'        onclick='deleteTicket(event)'    class='lblbtn'></input>
+      </div>
     </form>
   </section>
 </body>

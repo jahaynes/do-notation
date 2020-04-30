@@ -7,11 +7,11 @@ function ticketOnDragStart(event) {
     event.dataTransfer.setData('from', from);
 }
 
-function phaseAllowDrop(event) {
+function columnHeaderAllowDrop(event) {
     event.preventDefault();
 }
 
-function phaseDropTicket(event) {
+function columnHeaderDropTicket(event) {
     event.preventDefault();
     const fromId   = event.dataTransfer.getData('from')
     const toId     = event.target.id;  
@@ -25,11 +25,42 @@ function getCurrentBoard() {
   return urlParams.get('board');
 }
 
+function ticketSelect(event) {
+
+  const ticketId      = event.target.id;
+  const ticketElement = document.getElementById(ticketId);
+  const columnId      = ticketElement.columnId;
+
+  fetchTicket(columnId, ticketId,
+    function(ticket) {
+      document.getElementById('inp_name').value = ticket.name;
+      document.getElementById('inp_content').value = ticket.content;
+      document.getElementById('create-tickets').classList.add('visible');
+    });
+  
+}
+
+function showCreate(event) {
+  document.getElementById('inp_name').value = '';
+  document.getElementById('inp_content').value = '';
+  document.getElementById('create-tickets').classList.add('visible');
+}
+
+function cancelTicketAdd(event) {
+  document.getElementById('inp_name').value = '';
+  document.getElementById('inp_content').value = '';
+  document.getElementById('create-tickets').classList.remove('visible');
+}
+
+function update(event) {
+}
+
 function create(event) {
   const boardName  = getCurrentBoard();
   const strName    = document.getElementById('inp_name').value;
   const strContent = document.getElementById('inp_content').value;
   createTicket(boardName, strName, strContent);
+  document.getElementById('create-tickets').classList.remove('visible');
 }
 
 function main() {
