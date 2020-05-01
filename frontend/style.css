@@ -107,6 +107,10 @@ ul:first-of-type {
   margin-left: 0;
 }
 
+.noclick {
+  pointer-events: none;
+}
+
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */

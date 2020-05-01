@@ -30,14 +30,12 @@ function ticketAsElement(columnId, jsonTicket) {
     li.addEventListener('dragstart', ticketOnDragStart);
     li.addEventListener('click', ticketSelect);
     
-    div = document.createElement('div');
-    
     p = document.createElement('p');
     p.classList.add('noselect');
+    p.classList.add('noclick');
     p.textContent = jsonTicket.content;
 
-    div.appendChild(p);
-    li.appendChild(div);
+    li.appendChild(p);
     return li;
 }
 
