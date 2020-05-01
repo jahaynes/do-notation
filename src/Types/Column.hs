@@ -26,7 +26,7 @@ instance Show Column where
 
 newtype ColumnId =
     ColumnId { cn_id :: UUID
-             }
+             } deriving Eq
 
 instance ToJSON ColumnId where
     toJSON (ColumnId i) = toJSON i

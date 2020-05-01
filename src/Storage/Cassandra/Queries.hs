@@ -24,6 +24,7 @@ createApi c =
                , getDefaultColumn  = getDefaultColumnImpl c
                , getColumn         = getColumnImpl c
                , createTicket      = createTicketImpl c
+               , deleteTicket      = deleteTicketImpl c
                , getTicket         = getTicketImpl c
                , moveTicket        = moveTicketImpl c
                }
@@ -78,6 +79,30 @@ createTicketImpl c (ColumnId cid) name content = do
     runClient c $ write cqlCreateTicket (params (cid, freshTid, name, content))
     pure $ TicketId freshTid
 
+createTicketImpl' :: ColumnId -> TicketId -> Text -> Text -> Client TicketId
+createTicketImpl' (ColumnId cid) t@(TicketId tid) name content = do
+    write cqlCreateTicket (params (cid, tid, name, content))
+    pure t
+
+cqlCreateTicket :: PrepQuery W (UUID, UUID, Text, Text) ()
+cqlCreateTicket =
+    " INSERT INTO do_notation.ticket       \
+    \ (columnid, id, name, content) VALUES \
+    \ (       ?,  ?,    ?,       ?)        "
+
+deleteTicketImpl :: ClientState -> ColumnId -> TicketId -> IO ()
+deleteTicketImpl c cid tid = runClient c $ deleteTicketImpl' cid tid
+
+deleteTicketImpl' :: ColumnId -> TicketId -> Client ()
+deleteTicketImpl' (ColumnId cid) (TicketId tid) =
+    write cqlDeleteTicket (params (cid, tid))
+    where
+    cqlDeleteTicket :: PrepQuery W (UUID, UUID) ()
+    cqlDeleteTicket =
+        " DELETE FROM do_notation.ticket \
+        \ WHERE columnid = ?             \
+        \ AND   id       = ?             " 
+
 getColumnImpl :: ClientState -> ColumnId -> IO [Ticket]
 getColumnImpl c (ColumnId cid) =
     runClient c $ map toTicket <$> query cqlGetColumn (params (Identity cid))
@@ -90,31 +115,13 @@ getColumnImpl c (ColumnId cid) =
         \ FROM do_notation.ticket  \
         \ WHERE columnId = ?       "
 
-cqlCreateTicket :: PrepQuery W (UUID, UUID, Text, Text) ()
-cqlCreateTicket =
-    " INSERT INTO do_notation.ticket       \
-    \ (columnid, id, name, content) VALUES \
-    \ (       ?,  ?,    ?,       ?)        "
-
 moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO ()
-moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
+moveTicketImpl c _ from to tid
     | from == to = pure ()
     | otherwise = runClient c $ do
-        Ticket _ name content <- getTicketImpl' (ColumnId from) (TicketId tid)
-        putTicket name content
-        removeFromColumn
-
-    where
-    putTicket :: Text -> Text -> Client ()
-    putTicket name content = write cqlCreateTicket (params (to, tid, name, content))
-
-    removeFromColumn :: Client ()
-    removeFromColumn = write cqlRemoveFromColumn (params (from, tid))
-
-    cqlRemoveFromColumn :: PrepQuery W (UUID, UUID) ()
-    cqlRemoveFromColumn =
-        " DELETE FROM do_notation.ticket \
-        \ WHERE columnid = ? and id = ?  " 
+        Ticket _ name content <- getTicketImpl' from tid
+        createTicketImpl' to tid name content
+        deleteTicketImpl' from tid
 
 getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO Ticket
 getTicketImpl c cid tid = runClient c $ getTicketImpl' cid tid
