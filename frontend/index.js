@@ -16,6 +16,8 @@ function columnHeaderDropTicket(event) {
     const fromId   = event.dataTransfer.getData('from')
     const toId     = event.target.id;  
     const ticketId = event.dataTransfer.getData('ticket')
+    clearTicketPanel();
+    hideCreateTicket();
     moveTicket(getCurrentBoard(), fromId, toId, ticketId);
 }
 
@@ -23,6 +25,10 @@ function getCurrentBoard() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   return urlParams.get('board');
+}
+
+function hideCreateTicket() {
+  document.getElementById('create-tickets').classList.remove('visible');
 }
 
 function ticketSelect(event) {
@@ -35,33 +41,55 @@ function ticketSelect(event) {
     function(ticket) {
       document.getElementById('inp_name').value = ticket.name;
       document.getElementById('inp_content').value = ticket.content;
-      document.getElementById('create-tickets').classList.add('visible');
+      const createTicketSection = document.getElementById('create-tickets');
+      createTicketSection.columnId = columnId;
+      createTicketSection.ticketId = ticketId;
+      createTicketSection.classList.add('visible');
     });
-  
 }
 
 function showCreate(event) {
-  document.getElementById('inp_name').value = '';
-  document.getElementById('inp_content').value = '';
+  clearTicketPanel();
   document.getElementById('create-tickets').classList.add('visible');
 }
 
-function cancelTicketAdd(event) {
+function clearTicketPanel() {
+  const createTicketSection = document.getElementById('create-tickets');
+  createTicketSection.columnId = null;
+  createTicketSection.ticketId = null;
   document.getElementById('inp_name').value = '';
   document.getElementById('inp_content').value = '';
-  document.getElementById('create-tickets').classList.remove('visible');
 }
+
+function cancelTicketAdd(event) {
+  clearTicketPanel();
+  hideCreateTicket();
+}
+
+const deleteTicket =
+  async (event) => {
+    const createTicketSection = document.getElementById('create-tickets');
+    
+    const boardName = getCurrentBoard();
+    const columnId  = createTicketSection.columnId;
+    const ticketId  = createTicketSection.ticketId;
+
+    await restDeleteTicket(boardName, columnId, ticketId);
+    clearTicketPanel();
+    hideCreateTicket();
+  }
 
 function update(event) {
 }
 
-function create(event) {
-  const boardName  = getCurrentBoard();
-  const strName    = document.getElementById('inp_name').value;
-  const strContent = document.getElementById('inp_content').value;
-  createTicket(boardName, strName, strContent);
-  document.getElementById('create-tickets').classList.remove('visible');
-}
+const create =
+  async (event) => {
+    const boardName  = getCurrentBoard();
+    const strName    = document.getElementById('inp_name').value;
+    const strContent = document.getElementById('inp_content').value;
+    await createTicket(boardName, strName, strContent);
+    hideCreateTicket();
+  }
 
 function main() {
   const boardName = getCurrentBoard();

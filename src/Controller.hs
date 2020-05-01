@@ -6,6 +6,7 @@
 module Controller (runServer) where
 
 import Requests.CreateTicket
+import Requests.DeleteTicket
 import Requests.MoveTicket
 import Storage.StorageApi
 import Types.Board
@@ -25,9 +26,11 @@ type DoAPI =
 
    :<|> "column" :> QueryParam "columnId" UUID :> Get '[JSON] [Ticket]
 
-   :<|> "ticket" :> "get"    :> QueryParam "columnId" UUID :> QueryParam "ticketId" UUID :> Get '[JSON] Ticket
+   :<|> "ticket" :> "get" :> QueryParam "columnId" UUID :> QueryParam "ticketId" UUID :> Get '[JSON] Ticket
 
    :<|> "ticket" :> "create" :> ReqBody '[JSON] CreateTicket :> Post '[JSON] TicketId
+
+   :<|> "ticket" :> ReqBody '[JSON] DeleteTicket :> Delete '[JSON] ()
 
    :<|> "ticket" :> "move" :> ReqBody '[JSON] MoveTicket :> Post '[JSON] ()
 
@@ -39,6 +42,7 @@ server1 storageApi = routeQueryBoard
                 :<|> routeQueryColumn
                 :<|> routeQueryTicket
                 :<|> routeCreateTicket
+                :<|> routeDeleteTicket
                 :<|> routeMoveTicket
                 :<|> serveDirectoryWebApp "frontend"
 
@@ -57,6 +61,9 @@ server1 storageApi = routeQueryBoard
             liftIO $ getDefaultColumn storageApi boardName >>= \case
                 Just cid -> createTicket storageApi cid name body
                 Nothing  -> error "No default column"
+
+        routeDeleteTicket (DeleteTicket columnId ticketId) =
+            liftIO $ deleteTicket storageApi columnId ticketId
 
         routeMoveTicket (MoveTicket board from to ticket) =
             liftIO . void $ moveTicket storageApi board from to ticket

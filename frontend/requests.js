@@ -36,6 +36,22 @@ const createTicket =
         fetchBoard(boardName);
     }
 
+const restDeleteTicket = 
+    async (boardName, columnId, ticketId) => {
+        const body = { 'columnId': columnId
+                     , 'ticketId': ticketId
+                     };
+        const response =
+            await fetch('/ticket', {
+                method: 'DELETE',
+                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        fetchBoard(boardName);
+    }
+
 const fetchBoard =
     async (boardName) => {
         const response = await fetch('/board?board=' + boardName);
