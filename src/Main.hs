@@ -12,8 +12,9 @@ import Storage.StorageApi
 import Types.Board
 import Types.Column
 
+import Control.Monad      (when)
 import Safe               (readEitherSafe)
-import System.Environment (lookupEnv)
+import System.Environment (getArgs, lookupEnv)
 
 data Implementation = Sqlite
                     | Cassandra
@@ -31,10 +32,14 @@ getApi Cassandra = do
 main :: IO ()
 main = do
     storageApi <- getApi Sqlite
-    -- sampleData storageApi
-    runServer storageApi
-    pure ()
+    args <- getArgs
+    when (args == ["--sample-data"]) $ do
+        putStrLn "Generating sample data"
+        sampleData storageApi
 
+    runServer storageApi
+
+sampleData :: StorageApi -> IO ()
 sampleData storageApi = do
     let boardName = BoardName "some-board"
     _   <- createBoardColumn storageApi boardName 1 (ColumnName "wish-list")
