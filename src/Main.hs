@@ -20,7 +20,7 @@ data Implementation = Sqlite
                     | Cassandra
 
 getApi :: Implementation -> IO StorageApi
-getApi Sqlite = createSqlite "do-notation.db"
+getApi Sqlite = createSqlite "data/do-notation.db"
 getApi Cassandra = do
     cassandraPort  <- parseEnv "CASS_PORT"
     cassandraHosts <- parseEnv "CASS_HOSTS"
