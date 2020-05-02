@@ -13,7 +13,7 @@ import GHC.Generics               (Generic)
 
 newtype BoardName =
     BoardName { bi_value :: Text
-            } deriving Generic
+            } deriving (Eq, Generic)
 
 instance FromJSON BoardName where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop

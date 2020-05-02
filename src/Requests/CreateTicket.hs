@@ -4,15 +4,15 @@ module Requests.CreateTicket where
 
 import Types.Board
 import Types.Json
+import Types.Ticket
 
 import Data.Aeson
-import Data.Text       (Text)
-import GHC.Generics    (Generic)
+import GHC.Generics (Generic)
 
 data CreateTicket =
     CreateTicket { ct_board   :: !BoardName
-                 , ct_name    :: !Text
-                 , ct_content :: !Text
+                 , ct_name    :: !TicketName
+                 , ct_content :: !TicketContent
                  } deriving Generic
 
 instance FromJSON CreateTicket where

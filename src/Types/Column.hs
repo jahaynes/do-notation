@@ -24,9 +24,13 @@ instance ToJSON Column where
 instance Show Column where
     show = unpack . encode
 
+newtype ColumnPosition =
+    ColumnPosition { cp_position :: Int
+                   } deriving (Eq, Ord, Show)
+
 newtype ColumnId =
     ColumnId { cn_id :: UUID
-             } deriving Eq
+             } deriving (Eq, Ord)
 
 instance ToJSON ColumnId where
     toJSON (ColumnId i) = toJSON i

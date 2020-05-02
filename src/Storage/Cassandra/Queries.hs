@@ -60,10 +60,10 @@ getDefaultColumnImpl c (BoardName boardName) =
         \ FROM do_notation.board \
         \ WHERE name = ?         "
 
-createBoardColumnImpl :: ClientState -> BoardName -> Int -> ColumnName -> IO ColumnId
-createBoardColumnImpl c (BoardName boardName) position (ColumnName name) = do
+createBoardColumnImpl :: ClientState -> BoardName -> ColumnPosition -> ColumnName -> IO ColumnId
+createBoardColumnImpl c (BoardName boardName) (ColumnPosition pos) (ColumnName name) = do
     freshCid <- U.nextRandom
-    runClient c $ write cqlCreateBoardColumn (params (boardName, fromIntegral position, name, freshCid))
+    runClient c $ write cqlCreateBoardColumn (params (boardName, fromIntegral pos, name, freshCid))
     pure $ ColumnId freshCid
 
     where
@@ -73,14 +73,14 @@ createBoardColumnImpl c (BoardName boardName) position (ColumnName name) = do
         \ (name, position, columnname, columnid) VALUES \
         \ (   ?,        ?,          ?,        ?)        "
 
-createTicketImpl :: ClientState -> ColumnId -> Text -> Text -> IO TicketId
-createTicketImpl c (ColumnId cid) name content = do
+createTicketImpl :: ClientState -> ColumnId -> TicketName -> TicketContent -> IO TicketId
+createTicketImpl c (ColumnId cid) (TicketName name) (TicketContent content) = do
     freshTid <- U.nextRandom
     runClient c $ write cqlCreateTicket (params (cid, freshTid, name, content))
     pure $ TicketId freshTid
 
-createTicketImpl' :: ColumnId -> TicketId -> Text -> Text -> Client TicketId
-createTicketImpl' (ColumnId cid) t@(TicketId tid) name content = do
+createTicketImpl' :: ColumnId -> TicketId -> TicketName -> TicketContent -> Client TicketId
+createTicketImpl' (ColumnId cid) t@(TicketId tid) (TicketName name) (TicketContent content) = do
     write cqlCreateTicket (params (cid, tid, name, content))
     pure t
 
@@ -107,7 +107,8 @@ getColumnImpl :: ClientState -> ColumnId -> IO [Ticket]
 getColumnImpl c (ColumnId cid) =
     runClient c $ map toTicket <$> query cqlGetColumn (params (Identity cid))
     where
-    toTicket (ti, name, content) = Ticket (TicketId ti) name content
+    toTicket (ti, name, content) =
+        Ticket (TicketId ti) (TicketName name) (TicketContent content)
 
     cqlGetColumn :: PrepQuery R (Identity UUID) (UUID, Text, Text)
     cqlGetColumn =
@@ -129,7 +130,7 @@ getTicketImpl c cid tid = runClient c $ getTicketImpl' cid tid
 getTicketImpl' :: ColumnId -> TicketId -> Client Ticket
 getTicketImpl' (ColumnId cid) (TicketId tid) = query1 cqlGetTicket (params (cid, tid)) >>= \case
     Nothing -> error "no such ticket"
-    Just (id_, name, content) -> pure $ Ticket (TicketId id_) name content
+    Just (id_, name, content) -> pure $ Ticket (TicketId id_) (TicketName name) (TicketContent content)
 
 cqlGetTicket :: PrepQuery R (UUID, UUID) (UUID, Text, Text)
 cqlGetTicket =

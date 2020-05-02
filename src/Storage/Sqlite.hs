@@ -32,11 +32,11 @@ createSqlite filename = do
                       , moveTicket        = moveTicketImpl c
                       } 
 
-createBoardColumnImpl :: Connection -> BoardName -> Int -> ColumnName -> IO ColumnId
-createBoardColumnImpl c (BoardName boardName) position (ColumnName name) = do
-    freshCid <- U.nextRandom
-    execute c sqlCreateBoardColumn (BoardRow boardName position name (toText freshCid))
-    pure $ ColumnId freshCid
+createBoardColumnImpl :: Connection -> BoardName -> ColumnPosition -> ColumnName -> IO ColumnId
+createBoardColumnImpl c boardName columnPosition colName = do
+    freshCid <- ColumnId <$> U.nextRandom
+    execute c sqlCreateBoardColumn (BoardRow boardName columnPosition colName freshCid)
+    pure freshCid
 
     where
     sqlCreateBoardColumn :: Query
@@ -51,7 +51,7 @@ getBoardImpl c (BoardName boardName) =
     where
     asBoard :: [BoardRow] -> Board
     asBoard = Board
-            . V.map (\(BoardRow _ _ cn ci) -> Column (ColumnName cn) (ColumnId . fromJust . fromText $ ci))
+            . V.map (\(BoardRow _ _ cn ci) -> Column cn ci)
             . V.modify (sortBy . comparing $ \(BoardRow _ pos _ _) -> pos)
             . V.fromList
 
@@ -66,10 +66,10 @@ getDefaultColumnImpl c (BoardName boardName) =
     asColumnId <$> query c sqlGetDefaultColumn (Only boardName)
 
     where
-    asColumnId :: [SqlColumnId] -> Maybe ColumnId
-    asColumnId                [] = Nothing
-    asColumnId [SqlColumnId _ x] = Just x
-    asColumnId                xs = error $ "Too many column ids: " ++ show xs
+    asColumnId :: [(Int, Text)] -> Maybe ColumnId
+    asColumnId       [] = Nothing
+    asColumnId [(_, x)] = ColumnId <$> fromText x
+    asColumnId       xs = error $ "Too many column ids: " ++ show xs
 
     sqlGetDefaultColumn :: Query
     sqlGetDefaultColumn =
@@ -77,8 +77,8 @@ getDefaultColumnImpl c (BoardName boardName) =
         \ FROM board                     \
         \ WHERE name = ?                 "         
 
-createTicketImpl :: Connection -> ColumnId -> Text -> Text -> IO TicketId
-createTicketImpl c (ColumnId cid) name content = do
+createTicketImpl :: Connection -> ColumnId -> TicketName -> TicketContent -> IO TicketId
+createTicketImpl c (ColumnId cid) (TicketName name) (TicketContent content) = do
     freshTid <- U.nextRandom
     execute c sqlCreateTicket (toText cid, toText freshTid, name, content)
     pure $ TicketId freshTid
@@ -103,7 +103,8 @@ getColumnImpl :: Connection -> ColumnId -> IO [Ticket]
 getColumnImpl c (ColumnId cid) =
     map toTicket <$> query c sqlGetColumn (Only $ toText cid)
     where
-    toTicket (ti, name, content) = Ticket (TicketId $ fromJust . fromText $ ti) name content
+    toTicket (ti, name, content) =
+        Ticket (TicketId $ fromJust . fromText $ ti) (TicketName name) (TicketContent content) --todo duplicate
     sqlGetColumn :: Query
     sqlGetColumn =
         " SELECT id, content, name \
@@ -119,11 +120,13 @@ moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
         removeFromColumn
 
     where
-    putTicket :: Text -> Text -> IO ()
-    putTicket name content = execute c sqlCreateTicket (toText to, toText tid, name, content)
+    putTicket :: TicketName -> TicketContent -> IO ()
+    putTicket (TicketName name) (TicketContent content) =
+        execute c sqlCreateTicket (toText to, toText tid, name, content)
 
     removeFromColumn :: IO ()
-    removeFromColumn = execute c sqlRemoveFromColumn (toText from, toText tid)
+    removeFromColumn =
+        execute c sqlRemoveFromColumn (toText from, toText tid)
 
     sqlRemoveFromColumn :: Query
     sqlRemoveFromColumn =
@@ -135,7 +138,7 @@ getTicketImpl :: Connection -> ColumnId -> TicketId -> IO Ticket
 getTicketImpl c (ColumnId cid) (TicketId tid) =
     query c sqlGetTicket (toText cid, toText tid) >>= \case
         []                     -> error $ "no such ticket: " ++ show (cid, tid)
-        [(id_, name, content)] -> pure $ Ticket (TicketId . fromJust . fromText $ id_) name content
+        [(id_, name, content)] -> pure $ Ticket (TicketId . fromJust . fromText $ id_) (TicketName name) (TicketContent content)
         _                      -> error "Too many tickets"
 
 sqlGetTicket :: Query

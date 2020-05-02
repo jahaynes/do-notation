@@ -1,42 +1,50 @@
 module Storage.Sqlite.SqliteTypes where
 
+import Types.Board
 import Types.Column
+import Types.Ticket
 
 import Data.Maybe             (fromJust)
-import Data.Text              (Text)
-import Data.UUID              (fromText)
+import Data.UUID              (fromText, toText)
 import Database.SQLite.Simple (FromRow (..), ToRow (..), field)
 
 data BoardRow =
-    BoardRow Text Int Text Text
-        deriving (Eq, Ord)
+    BoardRow BoardName ColumnPosition ColumnName ColumnId
+        deriving Eq
 
 instance ToRow BoardRow where
-  toRow (BoardRow name pos colName colId) =
-      toRow (name, pos, colName, colId)
+  toRow (BoardRow (BoardName name)
+                  (ColumnPosition pos)
+                  (ColumnName colName)
+                  (ColumnId colId)) =
+      toRow (name, pos, colName, toText colId)
 
 instance FromRow BoardRow where
-  fromRow = BoardRow <$> field
-                     <*> field
-                     <*> field
-                     <*> field
+  fromRow = BoardRow <$> (BoardName                      <$> field)
+                     <*> (ColumnPosition                 <$> field)
+                     <*> (ColumnName                     <$> field)
+                     <*> (ColumnId . fromJust . fromText <$> field)
 
 data TicketRow =
-    TicketRow Text Text Text Text
-        deriving (Eq, Ord, Show)
+    TicketRow ColumnId TicketId TicketName TicketContent
+        deriving (Eq, Ord)
 
 instance ToRow TicketRow where
-  toRow (TicketRow columnId id_ name content) =
-      toRow (columnId, id_, name, content)
+  toRow (TicketRow (ColumnId ci) 
+                   (TicketId ti)
+                   (TicketName n)
+                   (TicketContent c)) =
+      toRow (toText ci, toText ti, n, c)
 
 instance FromRow TicketRow where
-  fromRow = TicketRow <$> field
-                      <*> field
-                      <*> field
-                      <*> field
+  fromRow = TicketRow <$> (ColumnId . fromJust . fromText <$> field)
+                      <*> (TicketId . fromJust . fromText <$> field)
+                      <*> (TicketName                     <$> field)
+                      <*> (TicketContent                  <$> field)
 
+{-
 data SqlColumnId =
-    SqlColumnId Int ColumnId deriving Show
+    SqlColumnId Int ColumnId
 
 instance FromRow SqlColumnId where
   fromRow = do
@@ -44,3 +52,4 @@ instance FromRow SqlColumnId where
       ci <- field
       pure $
         SqlColumnId p (ColumnId . fromJust . fromText $ ci)
+-}
