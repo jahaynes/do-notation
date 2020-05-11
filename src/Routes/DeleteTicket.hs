@@ -2,15 +2,14 @@
 
 module Routes.DeleteTicket where
 
+import Errors
 import Storage.StorageApi
 import Types.Column
 import Types.Json
 import Types.Ticket
 
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import GHC.Generics           (Generic)
-import Servant                (Handler)
 
 data DeleteTicket =
     DeleteTicket { dt_columnId :: !ColumnId
@@ -21,6 +20,8 @@ instance FromJSON DeleteTicket where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeDeleteTicket :: StorageApi -> DeleteTicket -> Handler ()
+routeDeleteTicket :: StorageApi
+                  -> DeleteTicket
+                  -> IO (Either ErrorResponse ())
 routeDeleteTicket storageApi (DeleteTicket columnId ticketId) =
-    liftIO $ deleteTicket storageApi columnId ticketId
+    Right <$> deleteTicket storageApi columnId ticketId

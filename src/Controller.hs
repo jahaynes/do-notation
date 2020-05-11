@@ -1,10 +1,12 @@
 {-# LANGUAGE DataKinds
            , LambdaCase
            , OverloadedStrings
+           , ScopedTypeVariables
            , TypeOperators #-}
 
 module Controller (runServer) where
 
+import Errors
 import Routes.CreateUser
 import Routes.CreateTicket
 import Routes.DeleteTicket
@@ -14,8 +16,8 @@ import Routes.Logout
 import Routes.MoveTicket
 import Routes.QueryColumn
 import Routes.QueryTicket
-import Routes.Shared
 import Routes.UpdateTicket
+import Security.Authorisation
 import Security.Security
 import Storage.StorageApi
 import Types.Board
@@ -70,39 +72,48 @@ type DoAPI =
 server :: SecurityApi IO -> StorageApi -> Server DoAPI
 server securityApi storageApi =
 
+         -- TODO handlers up here
          routeLogin securityApi storageApi
 
     :<|> routeLogout securityApi storageApi
 
+         -- TODO rename routeSignup ?
     :<|> routeCreateUser securityApi storageApi
 
-    :<|> (\mCookie mBoard ->
-        withAuthorisation securityApi mCookie $
-            routeQueryBoard storageApi mBoard)
+    :<|> (\mCookie mBoard -> handle
+                           $ withAuthorisation securityApi mCookie
+                           $ routeQueryBoard storageApi mBoard
+                           )
 
-    :<|> (\mCookie mUUID ->
-        withAuthorisation securityApi mCookie $
-            routeQueryColumn storageApi mUUID)
+    :<|> (\mCookie mUUID -> handle
+                          $ withAuthorisation securityApi mCookie
+                          $ routeQueryColumn storageApi mUUID
+                          )
 
-    :<|> (\mCookie mColumnId mTicketId ->
-        withAuthorisation securityApi mCookie $
-            routeQueryTicket storageApi mColumnId mTicketId)
+    :<|> (\mCookie mColumnId mTicketId -> handle 
+                                        $ withAuthorisation securityApi mCookie
+                                        $ routeQueryTicket storageApi mColumnId mTicketId
+                                        )
 
-    :<|> (\mCookie createTicketReq ->
-        withAuthorisation securityApi mCookie $
-            routeCreateTicket storageApi createTicketReq)
+    :<|> (\mCookie createTicketReq -> handle
+                                    $ withAuthorisation securityApi mCookie
+                                    $ routeCreateTicket storageApi createTicketReq
+                                    )
 
-    :<|> (\mCookie updateTicketReq ->
-        withAuthorisation securityApi mCookie $
-            routeUpdateTicket storageApi updateTicketReq)
+    :<|> (\mCookie updateTicketReq -> handle
+                                    $ withAuthorisation securityApi mCookie
+                                    $ routeUpdateTicket storageApi updateTicketReq
+                                    )
 
-    :<|> (\mCookie deleteTicketReq ->
-        withAuthorisation securityApi mCookie $
-            routeDeleteTicket storageApi deleteTicketReq)
+    :<|> (\mCookie deleteTicketReq -> handle
+                                    $ withAuthorisation securityApi mCookie
+                                    $ routeDeleteTicket storageApi deleteTicketReq
+                                    )
 
-    :<|> (\mCookie moveTicketReq ->
-        withAuthorisation securityApi mCookie $
-            routeMoveTicket storageApi moveTicketReq)
+    :<|> (\mCookie moveTicketReq -> handle
+                                  $ withAuthorisation securityApi mCookie
+                                  $ routeMoveTicket storageApi moveTicketReq
+                                  )
 
     :<|> serveDirectoryWebApp "frontend"
 

@@ -2,17 +2,17 @@
 
 module Routes.QueryColumn where
 
-import Routes.Shared
+import Errors
 import Storage.StorageApi
 import Types.Column
 import Types.Ticket
 
-import Control.Monad.IO.Class   (liftIO)
 import Data.UUID                (UUID)
-import Servant
 
 routeQueryColumn :: StorageApi
                  -> Maybe UUID
-                 -> Handler [Ticket]
-routeQueryColumn          _         Nothing = err 400 "coludmId not supplied."
-routeQueryColumn storageApi (Just columnId) = liftIO $ getColumn storageApi (ColumnId columnId)
+                 -> IO (Either ErrorResponse [Ticket])
+routeQueryColumn storageApi mColumnId =
+    case mColumnId of
+        Just columnId -> Right <$> getColumn storageApi (ColumnId columnId)
+        Nothing       -> errorResponse 400 "coludmId not supplied."

@@ -2,15 +2,14 @@
 
 module Routes.UpdateTicket where
 
+import Errors
 import Storage.StorageApi
 import Types.Column
 import Types.Json
 import Types.Ticket
 
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import GHC.Generics           (Generic)
-import Servant                (Handler)
 
 data UpdateTicket =
     UpdateTicket { ut_columnId :: !ColumnId
@@ -25,6 +24,6 @@ instance FromJSON UpdateTicket where
 
 routeUpdateTicket :: StorageApi
                   -> UpdateTicket
-                  -> Handler ()
+                  -> IO (Either ErrorResponse ())
 routeUpdateTicket storageApi (UpdateTicket colId ticketId name body) =
-    liftIO $ updateTicket storageApi colId ticketId name body
+    Right <$> updateTicket storageApi colId ticketId name body

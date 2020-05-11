@@ -4,16 +4,14 @@
 
 module Routes.CreateTicket where
 
-import Routes.Shared
+import Errors
 import Storage.StorageApi
 import Types.Board
 import Types.Json
 import Types.Ticket
 
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import GHC.Generics           (Generic)
-import Servant                (Handler)
 
 data CreateTicket =
     CreateTicket { ct_board   :: !BoardName
@@ -27,8 +25,8 @@ instance FromJSON CreateTicket where
 
 routeCreateTicket :: StorageApi
                   -> CreateTicket
-                  -> Handler TicketId
+                  -> IO (Either ErrorResponse TicketId)
 routeCreateTicket storageApi (CreateTicket boardName name body) =
-    (liftIO $ getDefaultColumn storageApi boardName) >>= \case
-        Just cid -> liftIO $ createTicket storageApi cid name body
-        Nothing  -> err 500 "No default column found."
+    getDefaultColumn storageApi boardName >>= \case
+        Just cid -> Right <$> createTicket storageApi cid name body
+        Nothing  -> errorResponse 500 "No default column found."

@@ -4,7 +4,7 @@
 
 module Routes.Login where
 
-import Routes.Shared
+import Errors
 import Security.AuthToken
 import Security.Security
 import Storage.StorageApi

@@ -2,13 +2,14 @@
 
 module Routes.QueryBoard where
 
-import Routes.Shared
+import Errors
 import Storage.StorageApi
-import Types.Board              (Board, BoardName)
+import Types.Board
 
-import Control.Monad.IO.Class   (liftIO)
-import Servant                  (Handler)
-
-routeQueryBoard :: StorageApi -> Maybe BoardName -> Handler Board
-routeQueryBoard          _          Nothing = err 400 "No board queried."
-routeQueryBoard storageApi (Just boardName) = liftIO $ getBoard storageApi boardName
+routeQueryBoard :: StorageApi
+                -> Maybe BoardName
+                -> IO (Either ErrorResponse Board)
+routeQueryBoard storageApi mBoardName =
+    case mBoardName of
+        Just boardName -> Right <$> getBoard storageApi boardName
+        Nothing        -> errorResponse 400 "No board queried."
