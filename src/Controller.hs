@@ -10,6 +10,7 @@ import Requests.CreateUser
 import Requests.DeleteTicket
 import Requests.Login
 import Requests.MoveTicket
+import Requests.UpdateTicket
 
 import Routes.CreateUser
 import Routes.CreateTicket
@@ -21,6 +22,7 @@ import Routes.MoveTicket
 import Routes.QueryColumn
 import Routes.QueryTicket
 import Routes.Shared
+import Routes.UpdateTicket
 
 import Security.Security
 import Storage.StorageApi
@@ -60,6 +62,10 @@ type DoAPI =
                  :> Post '[JSON] (Authed TicketId)
 
    :<|> "ticket" :> Header "Cookie" Text
+                 :> ReqBody '[JSON] UpdateTicket
+                 :> Put '[JSON] (Authed ())
+
+   :<|> "ticket" :> Header "Cookie" Text
                  :> ReqBody '[JSON] DeleteTicket
                  :> Delete '[JSON] (Authed ())
 
@@ -93,6 +99,10 @@ server securityApi storageApi =
     :<|> (\mCookie createTicketReq ->
         withAuthorisation securityApi mCookie $
             routeCreateTicket storageApi createTicketReq)
+
+    :<|> (\mCookie updateTicketReq ->
+        withAuthorisation securityApi mCookie $
+            routeUpdateTicket storageApi updateTicketReq)
 
     :<|> (\mCookie deleteTicketReq ->
         withAuthorisation securityApi mCookie $

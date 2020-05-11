@@ -13,6 +13,7 @@ data StorageApi = StorageApi
                 , getDefaultColumn   :: BoardName -> IO (Maybe ColumnId)
  
                 , createTicket       :: ColumnId -> TicketName -> TicketContent -> IO TicketId
+                , updateTicket       :: ColumnId -> TicketId -> TicketName -> TicketContent -> IO ()
                 , deleteTicket       :: ColumnId -> TicketId -> IO ()
                 , getTicket          :: ColumnId -> TicketId -> IO Ticket
                 , getColumn          :: ColumnId -> IO [Ticket]

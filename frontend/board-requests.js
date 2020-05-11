@@ -30,11 +30,27 @@ const createTicket =
                 body: JSON.stringify(body),
                 headers: {
                     'Content-Type': 'application/json',
-                    'auth': 'foo'
                 }
             });
 
         fetchBoard(boardName);
+    }
+
+const restUpdateTicket =
+    async (columnId, ticketId, name, content) => {
+        const body = { 'columnId': columnId
+                     , 'ticketId': ticketId
+                     , 'name': name
+                     , 'content': content
+                     };
+        const response =
+            await fetch('/ticket', {
+                method: 'PUT',
+                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
     }
 
 const restDeleteTicket = 

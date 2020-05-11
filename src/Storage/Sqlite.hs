@@ -29,6 +29,7 @@ createSqlite filename = do
                       , getBoard           = getBoardImpl c
                       , getDefaultColumn   = getDefaultColumnImpl c
                       , createTicket       = createTicketImpl c
+                      , updateTicket       = updateTicketImpl c
                       , deleteTicket       = deleteTicketImpl c
                       , getTicket          = getTicketImpl c
                       , getColumn          = getColumnImpl c
@@ -114,6 +115,18 @@ sqlCreateTicket =
     " INSERT INTO ticket                   \
     \ (columnid, id, name, content) VALUES \
     \ (       ?,  ?,    ?,       ?)        "
+
+updateTicketImpl :: Connection -> ColumnId -> TicketId -> TicketName -> TicketContent -> IO ()
+updateTicketImpl c (ColumnId cid) (TicketId tid) (TicketName name) (TicketContent content) =
+    execute c sqlUpdateTicket (name, content, toText cid, toText tid)
+    where
+    sqlUpdateTicket :: Query
+    sqlUpdateTicket =
+        " UPDATE ticket      \
+        \ SET name    = ?,   \
+        \     content = ?    \
+        \ WHERE columnid = ? \
+        \   AND id       = ? "
 
 deleteTicketImpl :: Connection -> ColumnId -> TicketId -> IO ()
 deleteTicketImpl c (ColumnId cid) (TicketId tid) =

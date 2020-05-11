@@ -32,7 +32,15 @@ const addTicket =
 
 const updateTicket =
   async () => {
-    alert("Not implemented");
+    const createTicketSection = document.getElementById('create-tickets');
+    const columnId   = createTicketSection.columnId;
+    const ticketId   = createTicketSection.ticketId;
+    const strName    = document.getElementById('input-ticket-name').value;
+    const strContent = document.getElementById('input-ticket-content').value;
+    await restUpdateTicket(columnId, ticketId, strName, strContent);
+
+    const boardName = getCurrentBoard();
+    fetchBoard(boardName);
   }
 
 const cancelAddTicket =

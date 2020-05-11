@@ -30,6 +30,7 @@ createApi c =
                , getDefaultColumn   = getDefaultColumnImpl c
                , getColumn          = getColumnImpl c
                , createTicket       = createTicketImpl c
+               , updateTicket       = updateTicketImpl c
                , deleteTicket       = deleteTicketImpl c
                , getTicket          = getTicketImpl c
                , moveTicket         = moveTicketImpl c
@@ -121,6 +122,21 @@ cqlCreateTicket =
     " INSERT INTO do_notation.ticket       \
     \ (columnid, id, name, content) VALUES \
     \ (       ?,  ?,    ?,       ?)        "
+
+updateTicketImpl :: ClientState -> ColumnId -> TicketId -> TicketName -> TicketContent -> IO ()
+updateTicketImpl c cid tid name content = runClient c $ updateTicketImpl' cid tid name content
+
+updateTicketImpl' :: ColumnId -> TicketId -> TicketName -> TicketContent -> Client ()
+updateTicketImpl' (ColumnId cid) (TicketId tid) (TicketName name) (TicketContent content) =
+    write cqlUpdateTicket (params (name, content, cid, tid))
+    where
+    cqlUpdateTicket :: PrepQuery W (Text, Text, UUID, UUID) ()
+    cqlUpdateTicket =
+        " UPDATE do_notation.ticket \
+        \ SET name    = ?,          \
+        \     content = ?           \
+        \ WHERE columnid = ?        \
+        \   AND id       = ?        "
 
 deleteTicketImpl :: ClientState -> ColumnId -> TicketId -> IO ()
 deleteTicketImpl c cid tid = runClient c $ deleteTicketImpl' cid tid
