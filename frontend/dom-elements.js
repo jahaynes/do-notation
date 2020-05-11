@@ -1,9 +1,14 @@
+function getCurrentBoard() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    return urlParams.get('board');
+}
 
 function columnHeaderAsElement(column) {
 
     ul = document.createElement('ul');
     ul.id = 'list_' + column.name;
-    ul.classList.add('column');
+    ul.classList.add('ticket-column');
 
     li = document.createElement('li');
 

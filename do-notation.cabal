@@ -13,8 +13,22 @@ executable do-notation
   ghc-options:         -Wall -O3
   other-modules:       Controller,
                        Requests.CreateTicket,
+                       Requests.CreateUser,
                        Requests.DeleteTicket,
+                       Requests.Login,
                        Requests.MoveTicket,
+                       Routes.CreateTicket,
+                       Routes.CreateUser,
+                       Routes.DeleteTicket,
+                       Routes.Login,
+                       Routes.Logout,
+                       Routes.MoveTicket,
+                       Routes.Shared,
+                       Routes.QueryBoard,
+                       Routes.QueryColumn,
+                       Routes.QueryTicket,
+                       Security.AuthToken,
+                       Security.Security,
                        Storage.Cassandra.Common,
                        Storage.Cassandra.Connection,
                        Storage.Cassandra.Keyspace,
@@ -26,8 +40,28 @@ executable do-notation
                        Types.Column,
                        Types.Board,
                        Types.Json,
-                       Types.Ticket
+                       Types.Ticket,
+                       Types.User
 
-  build-depends:       aeson, base, bytestring, cql, cql-io, network, safe, servant-server, split, sqlite-simple, text, uuid, vector, vector-algorithms, warp
+  build-depends:       aeson,
+                       base,
+                       binary,
+                       bytestring,
+                       cookie,
+                       cql,
+                       cql-io,
+                       cryptonite,
+                       jwt,
+                       memory,
+                       network,
+                       safe,
+                       servant-server,
+                       split,
+                       sqlite-simple,
+                       text,
+                       uuid,
+                       vector,
+                       vector-algorithms,
+                       warp
   hs-source-dirs:      src
   default-language:    Haskell2010

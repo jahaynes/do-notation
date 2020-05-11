@@ -8,6 +8,7 @@ import Storage.StorageApi
 import Types.Board
 import Types.Column
 import Types.Ticket
+import Types.User
 
 import           Data.Maybe                       (fromJust)
 import           Data.Ord
@@ -22,15 +23,40 @@ createSqlite :: FilePath -> IO StorageApi
 createSqlite filename = do
     c <- open filename
     createSqlTables c
-    pure $ StorageApi { createBoardColumn = createBoardColumnImpl c
-                      , getBoard          = getBoardImpl c
-                      , getDefaultColumn  = getDefaultColumnImpl c
-                      , createTicket      = createTicketImpl c
-                      , deleteTicket      = deleteTicketImpl c
-                      , getTicket         = getTicketImpl c
-                      , getColumn         = getColumnImpl c
-                      , moveTicket        = moveTicketImpl c
+    pure $ StorageApi { createUser         = createUserImpl c
+                      , getSaltAndPassword = getSaltAndPasswordImpl c
+                      , createBoardColumn  = createBoardColumnImpl c
+                      , getBoard           = getBoardImpl c
+                      , getDefaultColumn   = getDefaultColumnImpl c
+                      , createTicket       = createTicketImpl c
+                      , deleteTicket       = deleteTicketImpl c
+                      , getTicket          = getTicketImpl c
+                      , getColumn          = getColumnImpl c
+                      , moveTicket         = moveTicketImpl c
                       } 
+
+createUserImpl :: Connection -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createUserImpl c userId salt hashedSaltedPassword =
+    execute c sqlCreateUser (UserRow userId salt hashedSaltedPassword)
+    where
+    sqlCreateUser :: Query
+    sqlCreateUser =
+        " INSERT INTO user                        \
+        \ (userId, salt, hashsaltpassword) VALUES \
+        \ (     ?,    ?,                ?)        "
+
+getSaltAndPasswordImpl :: Connection -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
+getSaltAndPasswordImpl c (UserId userId) =
+    handle <$> query c sqlGetSaltAndPassword (Only userId)
+    where
+    handle             [] = Nothing
+    handle [(salt, hspw)] = Just (Salt salt, HashedSaltedPassword hspw)
+    handle              _ = error "Too many userids"
+    sqlGetSaltAndPassword :: Query
+    sqlGetSaltAndPassword =
+        " SELECT salt, hashsaltpassword \
+        \ FROM user                     \
+        \ WHERE userid = ?              "
 
 createBoardColumnImpl :: Connection -> BoardName -> ColumnPosition -> ColumnName -> IO ColumnId
 createBoardColumnImpl c boardName columnPosition colName = do
@@ -150,9 +176,19 @@ sqlGetTicket =
 
 createSqlTables :: Connection -> IO ()
 createSqlTables c = do
+    execute_ c schemaCreateUser
     execute_ c schemaCreateBoard
     execute_ c schemaCreateTicket
     where
+    schemaCreateUser :: Query
+    schemaCreateUser =
+        " CREATE TABLE IF NOT EXISTS    \
+        \   user                        \
+        \     ( userid TEXT PRIMARY KEY \
+        \     , salt             BLOB   \
+        \     , hashsaltpassword BLOB   \
+        \     )                         "
+
     schemaCreateBoard :: Query
     schemaCreateBoard = 
         " CREATE TABLE IF NOT EXISTS \

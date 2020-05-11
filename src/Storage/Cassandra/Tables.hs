@@ -4,18 +4,29 @@ module Storage.Cassandra.Tables where
 
 import Storage.Cassandra.Common (params)
 
-import           Control.Monad         (void)
-import qualified Data.Text.Lazy  as TL
-import           Database.CQL.IO 
+import Control.Monad   (void)
+import Data.Text.Lazy  (Text)
+import Database.CQL.IO 
 
 createTables :: ClientState -> IO ()
 createTables c =
     runClient c $ do
+        void $ schema (QueryString   schemaCreateUser) (params ())
         void $ schema (QueryString  schemaCreateBoard) (params ())
         void $ schema (QueryString schemaCreateTicket) (params ())
 
     where
-    schemaCreateBoard :: TL.Text
+    schemaCreateUser :: Text
+    schemaCreateUser =
+        " CREATE TABLE IF NOT EXISTS  \
+        \   do_notation.user          \
+        \     ( userid           TEXT \
+        \     , salt             BLOB \
+        \     , hashsaltpassword BLOB \
+        \     , PRIMARY KEY (userid)  \ 
+        \     )                       "
+
+    schemaCreateBoard :: Text
     schemaCreateBoard = 
         " CREATE TABLE IF NOT EXISTS                     \
         \   do_notation.board                            \
@@ -26,7 +37,7 @@ createTables c =
         \     , PRIMARY KEY (name, position, columnName) \
         \     ) WITH CLUSTERING ORDER BY (position ASC, columnName ASC) "
 
-    schemaCreateTicket :: TL.Text
+    schemaCreateTicket :: Text
     schemaCreateTicket = 
         " CREATE TABLE IF NOT EXISTS       \
         \   do_notation.ticket             \

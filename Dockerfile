@@ -1,4 +1,4 @@
-FROM haskell:8.8.3 AS do-notation-build
+FROM haskell:8.6.5 AS do-notation-build
 RUN apt-get update
 RUN apt-get dist-upgrade -y
 RUN apt-get install -y libssl-dev
@@ -13,7 +13,7 @@ COPY LICENSE      .
 COPY src          ./src
 RUN cabal v2-build do-notation
 
-RUN mv dist-newstyle/build/x86_64-linux/ghc-8.8.3/do-notation-0.1.0.0/x/do-notation/build/do-notation/do-notation .
+RUN mv dist-newstyle/build/x86_64-linux/ghc-8.6.5/do-notation-0.1.0.0/x/do-notation/build/do-notation/do-notation .
 RUN strip do-notation
 
 ####################################

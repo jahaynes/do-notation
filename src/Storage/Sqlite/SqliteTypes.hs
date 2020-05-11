@@ -3,10 +3,23 @@ module Storage.Sqlite.SqliteTypes where
 import Types.Board
 import Types.Column
 import Types.Ticket
+import Types.User
 
 import Data.Maybe             (fromJust)
 import Data.UUID              (fromText, toText)
 import Database.SQLite.Simple (FromRow (..), ToRow (..), field)
+
+data UserRow =
+    UserRow { ur_userid           :: !UserId
+            , ur_salt             :: !Salt
+            , ur_hashSaltPassword :: !HashedSaltedPassword
+            }
+
+instance ToRow UserRow where
+  toRow (UserRow (UserId uid)
+                 (Salt s)
+                 (HashedSaltedPassword hspw)) =
+      toRow (uid, s, hspw)
 
 data BoardRow =
     BoardRow BoardName ColumnPosition ColumnName ColumnId
@@ -41,15 +54,3 @@ instance FromRow TicketRow where
                       <*> (TicketId . fromJust . fromText <$> field)
                       <*> (TicketName                     <$> field)
                       <*> (TicketContent                  <$> field)
-
-{-
-data SqlColumnId =
-    SqlColumnId Int ColumnId
-
-instance FromRow SqlColumnId where
-  fromRow = do
-      p  <- field
-      ci <- field
-      pure $
-        SqlColumnId p (ColumnId . fromJust . fromText $ ci)
--}

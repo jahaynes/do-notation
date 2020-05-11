@@ -10,6 +10,7 @@ import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Text                  (Text)
 import Data.Vector                (Vector)
 import GHC.Generics               (Generic)
+import Servant                    (FromHttpApiData (..))
 
 newtype BoardName =
     BoardName { bi_value :: Text
@@ -19,6 +20,9 @@ instance FromJSON BoardName where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True
                                                 }
+
+instance FromHttpApiData BoardName where
+    parseUrlPiece txt = BoardName <$> parseUrlPiece txt
 
 newtype Board =
     Board { b_columns :: Vector Column

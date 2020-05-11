@@ -2,7 +2,9 @@
 
 module Main where
 
+
 import Controller
+import Security.Security
 import Storage.Cassandra.Connection
 import Storage.Cassandra.Queries
 import Storage.Cassandra.Keyspace
@@ -32,13 +34,14 @@ getApi Cassandra = do
 
 main :: IO ()
 main = do
+
+    securityApi <- createSecurityApi
     storageApi <- getApi Sqlite
     args <- getArgs
     when (args == ["--sample-data"]) $ do
         putStrLn "Generating sample data"
         sampleData storageApi
-
-    runServer storageApi
+    runServer securityApi storageApi
 
 sampleData :: StorageApi -> IO ()
 sampleData storageApi = do

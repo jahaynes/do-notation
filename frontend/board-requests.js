@@ -25,11 +25,12 @@ const createTicket =
                      , 'content': content
                      };
         const response =
-            await fetch('/ticket/create', {
+            await fetch('/ticket', {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'auth': 'foo'
                 }
             });
 
@@ -53,29 +54,57 @@ const restDeleteTicket =
     }
 
 const fetchBoard =
-    async (boardName) => {
+    async (boardName, authFailHandler) => {
         const response = await fetch('/board?board=' + boardName);
-        const board = await response.json();
-        buildColumnHeaders(board);
-        fetchColumns(board);
+
+        switch (response.status) {
+
+            case 200:
+                const board = await response.json();
+                buildColumnHeaders(board);
+                fetchColumns(board, authFailHandler);
+                break;
+
+            case 401:
+                authFailHandler();
+                break;
+        }
     }
 
 const fetchColumns =
-    async (board) => {
+    async (board, authFailHandler) => {
+
         for (const columnNo in board) {
+            
+            let err = false;
             const columnId = board[columnNo].id;
+
             const response = await fetch('/column?columnId=' + columnId);
-            const column   = await response.json();
-            const columnName = document.getElementById('list_' + board[columnNo].name);
-            for (const ticketNo in column) {
-                columnName.appendChild(ticketAsElement(columnId, column[ticketNo]));
+
+            switch(response.status) {
+
+                case 401:
+                    err = true;
+                    authFailHandler();
+                    break;
+
+                case 200:
+                    const column   = await response.json();
+                    const columnName = document.getElementById('list_' + board[columnNo].name);
+                    for (const ticketNo in column) {
+                        columnName.appendChild(ticketAsElement(columnId, column[ticketNo]));
+                    }
+            }
+
+            if(err) {
+                break;
             }
         }
     }
 
 const fetchTicket =
     async (columnId, ticketId, f) => {
-        const response = await fetch('/ticket/get?columnId=' + columnId + "&ticketId=" + ticketId);
+        const response = await fetch('/ticket?columnId=' + columnId + "&ticketId=" + ticketId);
         const json = await response.json();
         f(json);
     }

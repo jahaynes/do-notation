@@ -8,31 +8,63 @@ import Storage.StorageApi
 import Types.Board
 import Types.Column
 import Types.Ticket
+import Types.User
 
-import           Data.Int                    (Int32)
-import           Data.Text                   (Text)
+import           Data.ByteString              (ByteString)
+import qualified Data.ByteString.Lazy  as LBS
+import           Data.Int                     (Int32)
+import           Data.Text                    (Text)
 import qualified Data.Vector           as V
-import           Data.Vector.Algorithms.Heap (sort)
-import           Data.UUID                   (UUID)
+import           Data.Vector.Algorithms.Heap  (sort)
+import           Data.UUID                    (UUID)
 import qualified Data.UUID.V4          as U
 import           Database.CQL.IO 
+import           Database.CQL.Protocol        (Blob (Blob))
 
 createApi :: ClientState -> StorageApi
 createApi c = 
-    StorageApi { createBoardColumn = createBoardColumnImpl c
-               , getBoard          = getBoardImpl c
-               , getDefaultColumn  = getDefaultColumnImpl c
-               , getColumn         = getColumnImpl c
-               , createTicket      = createTicketImpl c
-               , deleteTicket      = deleteTicketImpl c
-               , getTicket         = getTicketImpl c
-               , moveTicket        = moveTicketImpl c
+    StorageApi { createUser         = createUserImpl c
+               , getSaltAndPassword = getSaltAndPasswordImpl c
+               , createBoardColumn  = createBoardColumnImpl c
+               , getBoard           = getBoardImpl c
+               , getDefaultColumn   = getDefaultColumnImpl c
+               , getColumn          = getColumnImpl c
+               , createTicket       = createTicketImpl c
+               , deleteTicket       = deleteTicketImpl c
+               , getTicket          = getTicketImpl c
+               , moveTicket         = moveTicketImpl c
                }
+
+blob :: ByteString -> Blob
+blob = Blob . LBS.fromStrict
+
+createUserImpl :: ClientState -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createUserImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
+    runClient c $ write cqlCreateUser (params (userId, blob salt, blob hspw))
+    where
+    cqlCreateUser :: PrepQuery W (Text, Blob, Blob) ()
+    cqlCreateUser =
+        " INSERT INTO user                        \
+        \ (userid, salt, hashsaltpassword) VALUES \
+        \ (     ?,    ?,                ?)        "
+
+getSaltAndPasswordImpl :: ClientState -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
+getSaltAndPasswordImpl c (UserId userid) =
+    handle <$> (runClient c $ query cqlGetSaltAndPassword (defQueryParams One (Identity userid)))
+    where
+    handle                       [] = Nothing
+    handle [(Blob salt, Blob hspw)] = Just (Salt $ LBS.toStrict salt, HashedSaltedPassword $ LBS.toStrict hspw)
+    handle                        _ = error "Too many userid"
+
+    cqlGetSaltAndPassword :: PrepQuery R (Identity Text) (Blob, Blob)
+    cqlGetSaltAndPassword =
+        " SELECT salt, hashsaltpassword \
+        \ FROM user                     \
+        \ WHERE userid = ?              "
 
 getBoardImpl :: ClientState -> BoardName -> IO Board
 getBoardImpl c (BoardName boardName) = runClient c $
     asBoard <$> query cqlGetBoard (defQueryParams One (Identity boardName))
-
     where
     asBoard :: [(Int32, Text, UUID)] -> Board
     asBoard = Board
@@ -121,7 +153,7 @@ moveTicketImpl c _ from to tid
     | from == to = pure ()
     | otherwise = runClient c $ do
         Ticket _ name content <- getTicketImpl' from tid
-        createTicketImpl' to tid name content
+        _ <- createTicketImpl' to tid name content
         deleteTicketImpl' from tid
 
 getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO Ticket

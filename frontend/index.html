@@ -4,11 +4,18 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="tickets.css">
+  <link rel="stylesheet" type="text/css" href="login.css">
+  <link rel="stylesheet" type="text/css" href="create-user.css">
+  <link rel="stylesheet" type="text/css" href="create-tickets.css">
 </head>
 <body>
 
   <section id="controls" class="controls-container container">
-    <input type=button value='Create Ticket' onclick='showCreate(event)' class='lblbtn'></input>
+    <input type=button value='Login'         onclick='showLoginUserPanel(event)' class='lblbtn'/>
+    <input type=button value='Logout'        onclick='doLogout(event)'           class='lblbtn'/>
+    <input type=button value='Create User'   onclick='showNewUserPanel(event)'   class='lblbtn'/>
+    <input type=button value='Create Ticket' onclick='showNewTicketPanel(event)' class='lblbtn'/>
   </section>
   
   <section id="tickets" class="tickets-container container">
@@ -16,22 +23,49 @@
 
   <section id="create-tickets" class="create-tickets container">
     <form>
-      <label for='inp_name' class='lblfield'>name</label>
-      <input id='inp_name'></input>
-      <label for='inp_content' class='lblfield'>content</label>
-      <textarea id='inp_content'></textarea>
-      <div id='ticket-commands'>
-        <input type=button value='Add Ticket'    onclick='create(event)'          class='lblbtn'></input>
-        <input type=button value='Update Ticket' onclick='update(event)'          class='lblbtn'></input>
-        <input type=button value='Cancel'        onclick='cancelTicketAdd(event)' class='lblbtn'></input>
-        <input type=button value='Delete'        onclick='deleteTicket(event)'    class='lblbtn'></input>
+      <label for='input-ticket-name' class='lblfield'>name</label>
+      <input  id='input-ticket-name'/>
+      <label   for='input-ticket-content' class='lblfield'>content</label>
+      <textarea id='input-ticket-content'></textarea>
+      <div id='create-ticket-commands'>
+        <input type=button value='Add Ticket'    onclick='addTicket(event)'       class='lblbtn'/>
+        <input type=button value='Update Ticket' onclick='updateTicket(event)'    class='lblbtn'/>
+        <input type=button value='Cancel'        onclick='cancelAddTicket(event)' class='lblbtn'/>
+        <input type=button value='Delete'        onclick='deleteTicket(event)'    class='lblbtn'/>
       </div>
     </form>
   </section>
-</body>
+
+  <section id="login" class="login container">
+    <form>
+      <label for='input-login-user-name' class='lblfield'>login username</label>
+      <input  id='input-login-user-name'/>
+      <label for='input-login-user-password' class='lblfield'>login password</label>
+      <input  id='input-login-user-password' type='password'/>
+      <div id='login-commands'>
+        <input type=button value='Login'  onclick='loginUser(event)'       class='lblbtn'/>
+        <input type=button value='Cancel' onclick='cancelLoginUser(event)' class='lblbtn'/>
+      </div>
+    </form>
+  </section>
+
+  <section id="create-user" class="create-user container">
+    <form>
+      <label for='input-user-name' class='lblfield'>username</label>
+      <input  id='input-user-name'/>
+      <label for='input-user-password' class='lblfield'>password</label>
+      <input  id='input-user-password' type='password'/>
+      <div id='create-user-commands'>
+        <input type=button value='Create User' onclick='addUser(event)'       class='lblbtn'/>
+        <input type=button value='Cancel'      onclick='cancelAddUser(event)' class='lblbtn'/>
+      </div>
+    </form>
+  </section>
 
 <script type="text/javascript" src="dom-elements.js"></script>
-<script type="text/javascript" src="requests.js"></script>
+<script type="text/javascript" src="user-requests.js"></script>
+<script type="text/javascript" src="board-requests.js"></script>
+<script type="text/javascript" src="panels.js"></script>
 <script type="text/javascript" src="index.js"></script>
-
+</body>
 </html>

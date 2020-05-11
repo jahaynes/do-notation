@@ -6,15 +6,27 @@
 module Controller (runServer) where
 
 import Requests.CreateTicket
+import Requests.CreateUser
 import Requests.DeleteTicket
+import Requests.Login
 import Requests.MoveTicket
+
+import Routes.CreateUser
+import Routes.CreateTicket
+import Routes.DeleteTicket
+import Routes.QueryBoard
+import Routes.Login             -- TODO Merge route types with request types?
+import Routes.Logout
+import Routes.MoveTicket
+import Routes.QueryColumn
+import Routes.QueryTicket
+import Routes.Shared
+
+import Security.Security
 import Storage.StorageApi
 import Types.Board
-import Types.Column
 import Types.Ticket
 
-import Control.Monad            (void)
-import Control.Monad.IO.Class   (liftIO)
 import Data.Text                (Text)
 import Data.UUID                (UUID)
 import Network.Wai.Handler.Warp (run)
@@ -22,57 +34,80 @@ import Servant
 
 type DoAPI =
 
-        "board" :> QueryParam "board" Text :> Get '[JSON] Board
+        "login" :> ReqBody '[JSON] Login
+                :> Post '[JSON] (Headers '[Header "Set-Cookie" Text] ())
 
-   :<|> "column" :> QueryParam "columnId" UUID :> Get '[JSON] [Ticket]
+   :<|> "logout" :> Post '[JSON] (Headers '[Header "Set-Cookie" Text] ())
 
-   :<|> "ticket" :> "get" :> QueryParam "columnId" UUID :> QueryParam "ticketId" UUID :> Get '[JSON] Ticket
+   :<|> "user" :> ReqBody '[JSON] CreateUser
+               :> Post '[JSON] ()
 
-   :<|> "ticket" :> "create" :> ReqBody '[JSON] CreateTicket :> Post '[JSON] TicketId
+   :<|> "board" :> Header "Cookie" Text
+                :> QueryParam "board" BoardName
+                :> Get '[JSON] (Authed Board)
 
-   :<|> "ticket" :> ReqBody '[JSON] DeleteTicket :> Delete '[JSON] ()
+   :<|> "column" :> Header "Cookie" Text
+                 :> QueryParam "columnId" UUID
+                 :> Get '[JSON] (Authed [Ticket])
 
-   :<|> "ticket" :> "move" :> ReqBody '[JSON] MoveTicket :> Post '[JSON] ()
+   :<|> "ticket" :> Header "Cookie" Text
+                 :> QueryParam "columnId" UUID
+                 :> QueryParam "ticketId" UUID
+                 :> Get '[JSON] (Authed Ticket)
+
+   :<|> "ticket" :> Header "Cookie" Text
+                 :> ReqBody '[JSON] CreateTicket
+                 :> Post '[JSON] (Authed TicketId)
+
+   :<|> "ticket" :> Header "Cookie" Text
+                 :> ReqBody '[JSON] DeleteTicket
+                 :> Delete '[JSON] (Authed ())
+
+   :<|> "ticket" :> "move" :> Header "Cookie" Text
+                           :> ReqBody '[JSON] MoveTicket
+                           :> Post '[JSON] (Authed ())
 
    :<|> "static" :> Raw
 
-server1 :: StorageApi
-        -> Server DoAPI
-server1 storageApi = routeQueryBoard
-                :<|> routeQueryColumn
-                :<|> routeQueryTicket
-                :<|> routeCreateTicket
-                :<|> routeDeleteTicket
-                :<|> routeMoveTicket
-                :<|> serveDirectoryWebApp "frontend"
+server :: SecurityApi IO -> StorageApi -> Server DoAPI
+server securityApi storageApi =
 
-        where
-        routeQueryBoard Nothing          = error "routeQueryBoard Nothing"
-        routeQueryBoard (Just boardName) = liftIO $ getBoard storageApi (BoardName boardName)
+         routeLogin securityApi storageApi
 
-        routeQueryColumn Nothing         = error "routeQueryColumn Nothing"
-        routeQueryColumn (Just columnId) = liftIO $ getColumn storageApi (ColumnId columnId)
+    :<|> routeLogout securityApi storageApi
 
-        routeQueryTicket _ Nothing             = error "routeQueryTicket columnId Nothing"
-        routeQueryTicket Nothing _             = error "routeQueryTicket ticketId Nothing"
-        routeQueryTicket (Just cid) (Just tid) = liftIO $ getTicket storageApi (ColumnId cid) (TicketId tid)
+    :<|> routeCreateUser securityApi storageApi
 
-        routeCreateTicket (CreateTicket boardName name body) =
-            liftIO $ getDefaultColumn storageApi boardName >>= \case
-                Just cid -> createTicket storageApi cid name body
-                Nothing  -> error "No default column"
+    :<|> (\mCookie mBoard ->
+        withAuthorisation securityApi mCookie $
+            routeQueryBoard storageApi mBoard)
 
-        routeDeleteTicket (DeleteTicket columnId ticketId) =
-            liftIO $ deleteTicket storageApi columnId ticketId
+    :<|> (\mCookie mUUID ->
+        withAuthorisation securityApi mCookie $
+            routeQueryColumn storageApi mUUID)
 
-        routeMoveTicket (MoveTicket board from to ticket) =
-            liftIO . void $ moveTicket storageApi board from to ticket
+    :<|> (\mCookie mColumnId mTicketId ->
+        withAuthorisation securityApi mCookie $
+            routeQueryTicket storageApi mColumnId mTicketId)
 
-doAPI :: Proxy DoAPI
-doAPI = Proxy
+    :<|> (\mCookie createTicketReq ->
+        withAuthorisation securityApi mCookie $
+            routeCreateTicket storageApi createTicketReq)
 
-runServer :: StorageApi
-          -> IO ()
-runServer storageApi =
-    run 8080 . serve doAPI
-             $ server1 storageApi
+    :<|> (\mCookie deleteTicketReq ->
+        withAuthorisation securityApi mCookie $
+            routeDeleteTicket storageApi deleteTicketReq)
+
+    :<|> (\mCookie moveTicketReq ->
+        withAuthorisation securityApi mCookie $
+            routeMoveTicket storageApi moveTicketReq)
+
+    :<|> serveDirectoryWebApp "frontend"
+
+runServer :: SecurityApi IO -> StorageApi -> IO ()
+runServer securityApi storageApi =
+    run 8080 . serve doAPI $ server securityApi storageApi
+
+    where
+    doAPI :: Proxy DoAPI
+    doAPI = Proxy

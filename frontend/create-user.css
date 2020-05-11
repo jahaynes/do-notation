@@ -1,0 +1,44 @@
+.create-user.visible {
+    display: block;
+}
+
+.create-user {
+    display: none;
+    background-color:gray;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.create-user input {
+    border: none;
+    background-color: beige;
+    width: 15rem;
+    min-height: 2em;
+    padding: 0.25em;
+    display: block;
+    font-size: 1rem;
+}
+
+.create-user .lblfield {
+    display: block;
+    margin-top: 1em;
+    font-size: 1.3em;
+}
+
+.create-user .lblfield:first-of-type {
+    margin-top: 0;
+}
+
+#create-user-commands {
+    display: flex;
+    margin-top: 1em;
+}
+
+#create-user-commands input {
+    margin: 0 0 0 1em;
+}
+
+#create-user-commands input:first-of-type {
+    margin-left: 0;
+}
+  

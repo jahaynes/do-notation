@@ -1,0 +1,44 @@
+.login.visible {
+    display: block;
+}
+
+.login {
+    display: none;
+    background-color:sienna;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.login input {
+    border: none;
+    background-color: beige;
+    width: 15rem;
+    min-height: 2em;
+    padding: 0.25em;
+    display: block;
+    font-size: 1rem;
+}
+
+.login .lblfield {
+    display: block;
+    margin-top: 1em;
+    font-size: 1.3em;
+}
+
+.login .lblfield:first-of-type {
+    margin-top: 0;
+}
+
+#login-commands {
+    display: flex;
+    margin-top: 1em;
+}
+
+#login-commands input {
+    margin: 0 0 0 1em;
+}
+
+#login-commands input:first-of-type {
+    margin-left: 0;
+}
+  

@@ -1,0 +1,32 @@
+
+.tickets-container {
+    background-color: rosybrown;
+    display: flex;
+    padding-bottom: 1em;
+}
+
+#tickets ul {
+    margin: 0;
+    list-style-type: none;
+    padding: 1em 1em 0 0;
+}
+
+.ticket-column {
+    width: 12em;
+}
+
+.ticket-li {
+    background-color: beige;
+    cursor: pointer;
+    height: 6em;
+    transition: 0.2s;
+    border: 0.4em solid beige;
+    border-radius: 0.3em;
+    margin-top: 1em;
+    position: relative;
+}
+  
+.ticket-li p {
+    margin: 1em 1em;
+    word-wrap: break-word;
+}

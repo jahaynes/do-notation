@@ -1,0 +1,63 @@
+.create-tickets.visible {
+    display: block;
+}
+
+.create-tickets {
+    display: none;
+    background-color:sandybrown;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.create-tickets input, .create-tickets textarea {
+    border: none;
+    background-color: beige;
+    width: 15rem;
+    min-height: 2em;
+    padding: 0.25em;
+    display: block;
+    font-size: 1rem;
+}
+
+.create-tickets textarea {
+    width: 47.125em;
+    min-height: 13em;
+}
+
+.create-tickets .lblfield {
+    display: block;
+    margin-top: 1em;
+    font-size: 1.3em;
+}
+
+.create-tickets .lblfield:first-of-type {
+    margin-top: 0;
+}
+
+.create-tickets .lblbtn {
+    margin: 1em 0 1em;
+    font-size: 1rem;
+    display: block;
+    padding: 0.5em 0;
+    cursor: pointer;
+    transition: all 0.1s;
+    font-size: 1.3em;
+}
+
+.create-tickets .lblbtn:focus, .create-tickets .lblbtn:hover {
+    background-color: red;
+}
+
+#create-ticket-commands {
+    display: flex;
+    margin-top: 1em;
+}
+  
+#create-ticket-commands input {
+    margin: 0 0 0 1em;
+}
+  
+#create-ticket-commands input:first-of-type {
+    margin-left: 0;
+}
+  

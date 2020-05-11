@@ -17,57 +17,32 @@ function columnHeaderDropTicket(event) {
     const toId     = event.target.id;  
     const ticketId = event.dataTransfer.getData('ticket')
     clearTicketPanel();
-    hideCreateTicket();
+    setVisible(panels.NONE);
     moveTicket(getCurrentBoard(), fromId, toId, ticketId);
 }
 
-function getCurrentBoard() {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  return urlParams.get('board');
-}
+const addTicket =
+  async () => {
+    const boardName  = getCurrentBoard();
+    const strName    = document.getElementById('input-ticket-name').value;
+    const strContent = document.getElementById('input-ticket-content').value;
+    await createTicket(boardName, strName, strContent);
+    setVisible(panels.NONE);
+  }
 
-function hideCreateTicket() {
-  document.getElementById('create-tickets').classList.remove('visible');
-}
+const updateTicket =
+  async () => {
+    alert("Not implemented");
+  }
 
-function ticketSelect(event) {
-
-  const ticketId      = event.target.id;
-  const ticketElement = document.getElementById(ticketId);
-  const columnId      = ticketElement.columnId;
-
-  fetchTicket(columnId, ticketId,
-    function(ticket) {
-      document.getElementById('inp_name').value = ticket.name;
-      document.getElementById('inp_content').value = ticket.content;
-      const createTicketSection = document.getElementById('create-tickets');
-      createTicketSection.columnId = columnId;
-      createTicketSection.ticketId = ticketId;
-      createTicketSection.classList.add('visible');
-    });
-}
-
-function showCreate(event) {
-  clearTicketPanel();
-  document.getElementById('create-tickets').classList.add('visible');
-}
-
-function clearTicketPanel() {
-  const createTicketSection = document.getElementById('create-tickets');
-  createTicketSection.columnId = null;
-  createTicketSection.ticketId = null;
-  document.getElementById('inp_name').value = '';
-  document.getElementById('inp_content').value = '';
-}
-
-function cancelTicketAdd(event) {
-  clearTicketPanel();
-  hideCreateTicket();
-}
+const cancelAddTicket =
+  async () => {
+    setVisible(panels.NONE);
+    clearTicketPanel();
+  }
 
 const deleteTicket =
-  async (event) => {
+  async () => {
     const createTicketSection = document.getElementById('create-tickets');
     
     const boardName = getCurrentBoard();
@@ -76,24 +51,57 @@ const deleteTicket =
 
     await restDeleteTicket(boardName, columnId, ticketId);
     clearTicketPanel();
-    hideCreateTicket();
+    setVisible(panels.NONE);
   }
 
-function update(event) {
+const addUser =
+  async () => {
+    const strName     = document.getElementById('input-user-name').value;
+    const strPassword = document.getElementById('input-user-password').value;
+    await createUser(strName, strPassword);
+    setVisible(panels.NONE);
+  }
+
+const loginUser =
+  async () => {
+    const strName     = document.getElementById('input-login-user-name').value;
+    const strPassword = document.getElementById('input-login-user-password').value;
+    const response    = await login(strName, strPassword);
+
+    switch(response.status) {
+
+      case 401:
+        break;
+
+      case 200:
+        setVisible(panels.NONE);
+        break;
+    }
+  }
+
+function showLoginUserPanel(event) {
+  clearLoginPanel();
+  setVisible(panels.LOGIN);
 }
 
-const create =
-  async (event) => {
-    const boardName  = getCurrentBoard();
-    const strName    = document.getElementById('inp_name').value;
-    const strContent = document.getElementById('inp_content').value;
-    await createTicket(boardName, strName, strContent);
-    hideCreateTicket();
+const doLogout =
+  async () => {
+    await logout();
   }
+
+function showNewUserPanel(event) {
+  clearUserPanel();
+  setVisible(panels.CREATE_USER);
+}
+
+function showNewTicketPanel(event) {
+  clearTicketPanel();
+  setVisible(panels.CREATE_TICKET);
+}
 
 function main() {
   const boardName = getCurrentBoard();
-  fetchBoard(boardName);
+  fetchBoard(boardName, showLoginUserPanel);
 }
 
 main();
