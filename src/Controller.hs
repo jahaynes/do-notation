@@ -5,25 +5,17 @@
 
 module Controller (runServer) where
 
-import Requests.CreateTicket
-import Requests.CreateUser
-import Requests.DeleteTicket
-import Requests.Login
-import Requests.MoveTicket
-import Requests.UpdateTicket
-
 import Routes.CreateUser
 import Routes.CreateTicket
 import Routes.DeleteTicket
 import Routes.QueryBoard
-import Routes.Login             -- TODO Merge route types with request types?
+import Routes.Login
 import Routes.Logout
 import Routes.MoveTicket
 import Routes.QueryColumn
 import Routes.QueryTicket
 import Routes.Shared
 import Routes.UpdateTicket
-
 import Security.Security
 import Storage.StorageApi
 import Types.Board

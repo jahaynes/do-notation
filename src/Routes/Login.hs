@@ -1,21 +1,34 @@
 {-# LANGUAGE DataKinds,
+             DeriveGeneric,
              OverloadedStrings #-}
 
 module Routes.Login where
 
-import Requests.Login
 import Routes.Shared
 import Security.AuthToken
 import Security.Security
 import Storage.StorageApi
+import Types.Json         (chop)
+import Types.User         (UserId, RawPassword)
 
-import Control.Monad.IO.Class   (liftIO)
+import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
 import Data.Binary.Builder
-import Data.ByteString.Lazy     (toStrict)
-import Data.Text.Encoding       (decodeUtf8, encodeUtf8)
-import Data.Text                (Text)
+import Data.ByteString.Lazy   (toStrict)
+import Data.Text.Encoding     (decodeUtf8, encodeUtf8)
+import Data.Text              (Text)
+import GHC.Generics           (Generic)
 import Servant
 import Web.Cookie
+
+data Login =
+    Login { l_username    :: !UserId
+          , l_rawpassword :: !RawPassword
+          } deriving Generic
+
+instance FromJSON Login where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
+                                                , unwrapUnaryRecords = True }
 
 routeLogin :: SecurityApi m
            -> StorageApi

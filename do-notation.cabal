@@ -12,12 +12,6 @@ executable do-notation
   main-is:             Main.hs
   ghc-options:         -Wall -O3
   other-modules:       Controller,
-                       Requests.CreateTicket,
-                       Requests.CreateUser,
-                       Requests.DeleteTicket,
-                       Requests.Login,
-                       Requests.MoveTicket,
-                       Requests.UpdateTicket,
                        Routes.CreateTicket,
                        Routes.CreateUser,
                        Routes.DeleteTicket,

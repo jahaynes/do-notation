@@ -1,15 +1,29 @@
-{-# LANGUAGE LambdaCase
+{-# LANGUAGE DeriveGeneric
+           , LambdaCase
            , OverloadedStrings #-}
 
 module Routes.CreateTicket where
 
-import Requests.CreateTicket
 import Routes.Shared
 import Storage.StorageApi
+import Types.Board
+import Types.Json
 import Types.Ticket
 
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
+import GHC.Generics           (Generic)
 import Servant                (Handler)
+
+data CreateTicket =
+    CreateTicket { ct_board   :: !BoardName
+                 , ct_name    :: !TicketName
+                 , ct_content :: !TicketContent
+                 } deriving Generic
+
+instance FromJSON CreateTicket where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
+                                                , unwrapUnaryRecords = True }
 
 routeCreateTicket :: StorageApi
                   -> CreateTicket
