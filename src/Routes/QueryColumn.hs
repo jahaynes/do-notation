@@ -7,12 +7,19 @@ import Storage.StorageApi
 import Types.Column
 import Types.Ticket
 
-import Data.UUID                (UUID)
+import Control.Monad.Trans.Class  (lift)
+import Control.Monad.Trans.Except (ExceptT)
+import Data.UUID                  (UUID)
 
 routeQueryColumn :: StorageApi
-                 -> Maybe UUID
-                 -> IO (Either ErrorResponse [Ticket])
+                 -> Maybe UUID -- TODO type
+                 -> ExceptT ErrorResponse IO [Ticket]
 routeQueryColumn storageApi mColumnId =
-    case mColumnId of
-        Just columnId -> Right <$> getColumn storageApi (ColumnId columnId)
-        Nothing       -> errorResponse 400 "coludmId not supplied."
+
+    catchAll "Could not query column." $ do
+        columnId <- getColumnId mColumnId
+        lift (getColumn storageApi (ColumnId columnId))
+
+    where
+    getColumnId Nothing   = err' 400 "No columnId supplied."
+    getColumnId (Just ci) = pure ci

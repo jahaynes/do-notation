@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric,
+             OverloadedStrings #-}
 
 module Routes.MoveTicket where
 
@@ -9,9 +10,11 @@ import Types.Column
 import Types.Json
 import Types.Ticket
 
-import Control.Monad          (void)
+import Control.Monad.Trans.Class  (lift)
+import Control.Monad.Trans.Except (ExceptT)
+import Control.Monad              (void)
 import Data.Aeson
-import GHC.Generics           (Generic)
+import GHC.Generics               (Generic)
 
 data MoveTicket =
     MoveTicket { mt_board  :: !BoardName
@@ -26,6 +29,7 @@ instance FromJSON MoveTicket where
 
 routeMoveTicket :: StorageApi
                 -> MoveTicket
-                -> IO (Either ErrorResponse ())
+                -> ExceptT ErrorResponse IO ()
 routeMoveTicket storageApi (MoveTicket board from to ticket) =
-    Right <$> (void $ moveTicket storageApi board from to ticket)
+    catchAll "Could not move ticket"
+             (lift . void $ moveTicket storageApi board from to ticket)

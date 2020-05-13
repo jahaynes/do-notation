@@ -8,10 +8,11 @@ import Errors
 import Security.AuthToken
 import Security.Security
 
-import Data.Aeson         (ToJSON (..))
-import Data.Text          (Text)
-import Data.Text.Encoding (decodeUtf8, encodeUtf8)
-import Safe               (headMay)
+import Control.Monad.Trans.Except
+import Data.Aeson                 (ToJSON (..))
+import Data.ByteString.Lazy       (ByteString)
+import Data.Text                  (Text)
+import Data.Text.Encoding         (encodeUtf8, decodeUtf8')
 import Web.Cookie
 
 newtype Authed a = Authed a
@@ -19,27 +20,35 @@ newtype Authed a = Authed a
 instance ToJSON a => ToJSON (Authed a) where
     toJSON (Authed a) = toJSON a
 
--- TODO remove handler
+withAuthorisation :: Monad m => SecurityApi n
+                             -> Maybe Text        -- TODO Cookie?
+                             -> ExceptT ErrorResponse m a
+                             -> ExceptT ErrorResponse m (Authed a)
+withAuthorisation securityApi mCookieTxt handler = do
 
-withAuthorisation :: SecurityApi m
-                  -> Maybe Text
-                  -> IO (Either ErrorResponse         a)
-                  -> IO (Either ErrorResponse (Authed a))
-withAuthorisation           _       Nothing       _ = errorResponse 401 "No authorisation supplied."
-withAuthorisation securityApi (Just cookie) handler =
-    case getAuthTokenCookie cookie of
-        Nothing -> errorResponse 401 "Could not parse authorisation."
-        Just authToken ->
-            if verify securityApi authToken
-                then fmap Authed <$> handler
-                else errorResponse 401 "Authorisation failed."
+    cookieTxt <- case mCookieTxt of
+                     Nothing        -> err' 401 "No authorisation supplied."
+                     Just cookieTxt -> pure cookieTxt
 
--- TODO rewrite eitherT ?
-getAuthTokenCookie :: Text -> Maybe AuthToken
-getAuthTokenCookie cookieTxt =
-    AuthToken <$> ( headMay
-                    . map (decodeUtf8 . snd)
-                    . filter (\(k,_) -> k == "authToken")
-                    . parseCookies
-                    . encodeUtf8
-                    $ cookieTxt )
+    authToken <- case getAuthTokenCookie cookieTxt of
+                     Left e -> let msg = "Could not parse auth: " <> e
+                               in err' 400 msg
+                     Right r -> pure r
+
+    if verify securityApi authToken
+        then Authed <$> handler
+        else err' 401 "Auth token rejected."
+
+getAuthTokenCookie :: Text -> Either ByteString AuthToken
+getAuthTokenCookie cookieTxt = do
+
+    let cookies = parseCookies $ encodeUtf8 cookieTxt
+
+    val <- case filter (\(k,_) -> k == "authToken") cookies of
+               []       -> Left "No key 'authToken' in cookies"
+               [(_, v)] -> Right v
+               _        -> Left "Too many 'authToken' keys in cookies"
+
+    case decodeUtf8' val of
+        Left _  -> Left "Invalid utf8 in authToken value"
+        Right x -> Right (AuthToken x)

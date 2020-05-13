@@ -1,10 +1,12 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass,
+             DeriveGeneric   #-}
 
 module Types.Board where
 
 import Types.Column
 import Types.Json
 
+import Control.DeepSeq            (NFData)
 import Data.Aeson
 import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Text                  (Text)
@@ -26,7 +28,7 @@ instance FromHttpApiData BoardName where
 
 newtype Board =
     Board { b_columns :: Vector Column
-          } deriving Generic
+          } deriving (Generic, NFData)
 
 instance ToJSON Board where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop

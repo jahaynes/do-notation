@@ -1,9 +1,11 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass,
+             DeriveGeneric   #-}
 
 module Types.Column where
 
 import Types.Json
 
+import Control.DeepSeq            (NFData)
 import Data.Aeson
 import Data.Aeson.Types
 import Data.ByteString.Lazy.Char8 (unpack)
@@ -14,7 +16,7 @@ import GHC.Generics               (Generic)
 data Column = 
     Column { c_name :: !ColumnName
            , c_id   :: !ColumnId
-           } deriving Generic
+           } deriving (Generic, NFData)
 
 instance ToJSON Column where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop
@@ -30,7 +32,7 @@ newtype ColumnPosition =
 
 newtype ColumnId =
     ColumnId { cn_id :: UUID
-             } deriving (Eq, Ord)
+             } deriving (Eq, Ord, Generic, NFData)
 
 instance ToJSON ColumnId where
     toJSON (ColumnId i) = toJSON i
@@ -43,7 +45,7 @@ instance Show ColumnId where
 
 newtype ColumnName =
     ColumnName { cn_value :: Text
-               } deriving (Eq, Ord)
+               } deriving (Eq, Ord, Generic, NFData)
 
 instance ToJSON ColumnName where
     toJSON (ColumnName cn) = toJSON cn

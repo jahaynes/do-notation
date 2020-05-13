@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric,
+             OverloadedStrings #-}
 
 module Routes.DeleteTicket where
 
@@ -8,8 +9,10 @@ import Types.Column
 import Types.Json
 import Types.Ticket
 
+import Control.Monad.Trans.Class  (lift)
+import Control.Monad.Trans.Except (ExceptT)
 import Data.Aeson
-import GHC.Generics           (Generic)
+import GHC.Generics               (Generic)
 
 data DeleteTicket =
     DeleteTicket { dt_columnId :: !ColumnId
@@ -22,6 +25,7 @@ instance FromJSON DeleteTicket where
 
 routeDeleteTicket :: StorageApi
                   -> DeleteTicket
-                  -> IO (Either ErrorResponse ())
+                  -> ExceptT ErrorResponse IO ()
 routeDeleteTicket storageApi (DeleteTicket columnId ticketId) =
-    Right <$> deleteTicket storageApi columnId ticketId
+    catchAll "Could not delete ticket." $
+        (lift $ deleteTicket storageApi columnId ticketId)

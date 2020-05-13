@@ -10,8 +10,10 @@ import Types.Board
 import Types.Json
 import Types.Ticket
 
+import Control.Monad.Trans.Class  (lift)
+import Control.Monad.Trans.Except (ExceptT)
 import Data.Aeson
-import GHC.Generics           (Generic)
+import GHC.Generics               (Generic)
 
 data CreateTicket =
     CreateTicket { ct_board   :: !BoardName
@@ -25,8 +27,9 @@ instance FromJSON CreateTicket where
 
 routeCreateTicket :: StorageApi
                   -> CreateTicket
-                  -> IO (Either ErrorResponse TicketId)
+                  -> ExceptT ErrorResponse IO TicketId
 routeCreateTicket storageApi (CreateTicket boardName name body) =
-    getDefaultColumn storageApi boardName >>= \case
-        Just cid -> Right <$> createTicket storageApi cid name body
-        Nothing  -> errorResponse 500 "No default column found."
+    catchAll "Could not create ticket." $
+        lift (getDefaultColumn storageApi boardName) >>= \case
+            Just defaultColumnId -> lift (createTicket storageApi defaultColumnId name body)
+            Nothing              -> err' 500 "No default column found."

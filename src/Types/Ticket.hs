@@ -1,9 +1,11 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass,
+             DeriveGeneric #-}
 
 module Types.Ticket where
 
 import Types.Json
 
+import Control.DeepSeq (NFData)
 import Data.Aeson
 import Data.Text       (Text)
 import Data.UUID       (UUID)
@@ -11,7 +13,7 @@ import GHC.Generics    (Generic)
 
 newtype TicketId =
     TicketId { ti_value :: UUID
-             } deriving (Generic, Eq, Ord)
+             } deriving (Eq, Ord, Generic, NFData)
 
 instance ToJSON TicketId where
     toJSON (TicketId u) = toJSON u
@@ -21,7 +23,7 @@ instance FromJSON TicketId where
 
 newtype TicketName =
     TicketName { tn_value :: Text
-               } deriving (Eq, Ord)
+               } deriving (Eq, Ord, Generic, NFData)
 
 instance ToJSON TicketName where
     toJSON (TicketName n) = toJSON n
@@ -31,7 +33,7 @@ instance FromJSON TicketName where
 
 newtype TicketContent =
     TicketContent { tc_value :: Text
-                  } deriving (Eq, Ord)
+                  } deriving (Eq, Ord, Generic, NFData)
 
 instance ToJSON TicketContent where
     toJSON (TicketContent c) = toJSON c
@@ -43,7 +45,7 @@ data Ticket =
     Ticket { t_id      :: !TicketId
            , t_name    :: !TicketName
            , t_content :: !TicketContent
-           } deriving Generic
+           } deriving (Generic, NFData)
 
 instance ToJSON Ticket where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop

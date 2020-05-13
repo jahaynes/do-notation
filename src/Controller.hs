@@ -90,7 +90,7 @@ server securityApi storageApi =
                           $ routeQueryColumn storageApi mUUID
                           )
 
-    :<|> (\mCookie mColumnId mTicketId -> handle 
+    :<|> (\mCookie mColumnId mTicketId -> handle
                                         $ withAuthorisation securityApi mCookie
                                         $ routeQueryTicket storageApi mColumnId mTicketId
                                         )
