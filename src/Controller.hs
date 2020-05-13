@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds
-           , LambdaCase
            , OverloadedStrings
            , ScopedTypeVariables
            , TypeOperators #-}
@@ -75,7 +74,7 @@ server securityApi storageApi =
                   $ routeLogin' securityApi storageApi login >>= \cookieHeader -> pure $ addHeader cookieHeader ()
                   )
 
-    :<|> (pure $ addHeader routeLogout ())
+    :<|> pure (addHeader routeLogout ())
 
          -- TODO rename routeSignup ?
     :<|> routeCreateUser securityApi storageApi

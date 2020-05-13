@@ -51,7 +51,7 @@ createUserImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
 
 getSaltAndPasswordImpl :: ClientState -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
 getSaltAndPasswordImpl c (UserId userid) =
-    handle <$> (runClient c $ query cqlGetSaltAndPassword (defQueryParams One (Identity userid)))
+    handle <$> runClient c (query cqlGetSaltAndPassword (defQueryParams One (Identity userid)))
     where
     handle                       [] = Nothing
     handle [(Blob salt, Blob hspw)] = Just (Salt $ LBS.toStrict salt, HashedSaltedPassword $ LBS.toStrict hspw)

@@ -50,6 +50,6 @@ hashPasswordWithSaltImpl :: Salt -> RawPassword -> HashedSaltedPassword
 hashPasswordWithSaltImpl (Salt salt) (RawPassword pword) =
     HashedSaltedPassword . convert 
                          . hashFinalize
-                         . (`hashUpdate` (encodeUtf8 pword))
+                         . (`hashUpdate` encodeUtf8 pword)
                          . (`hashUpdate` salt)
                          $ hashInitWith SHA3_512

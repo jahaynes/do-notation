@@ -27,5 +27,5 @@ routeDeleteTicket :: StorageApi
                   -> DeleteTicket
                   -> ExceptT ErrorResponse IO ()
 routeDeleteTicket storageApi (DeleteTicket columnId ticketId) =
-    catchAll "Could not delete ticket." $
-        (lift $ deleteTicket storageApi columnId ticketId)
+    catchAll "Could not delete ticket."
+             (lift $ deleteTicket storageApi columnId ticketId)
