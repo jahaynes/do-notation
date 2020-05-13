@@ -45,7 +45,7 @@ createUserImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
     where
     cqlCreateUser :: PrepQuery W (Text, Blob, Blob) ()
     cqlCreateUser =
-        " INSERT INTO user                        \
+        " INSERT INTO do_notation.user            \
         \ (userid, salt, hashsaltpassword) VALUES \
         \ (     ?,    ?,                ?)        "
 
@@ -60,7 +60,7 @@ getSaltAndPasswordImpl c (UserId userid) =
     cqlGetSaltAndPassword :: PrepQuery R (Identity Text) (Blob, Blob)
     cqlGetSaltAndPassword =
         " SELECT salt, hashsaltpassword \
-        \ FROM user                     \
+        \ FROM do_notation.user         \
         \ WHERE userid = ?              "
 
 getBoardImpl :: ClientState -> BoardName -> IO Board
