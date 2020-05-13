@@ -4,6 +4,7 @@
 
 module Routes.Login where
 
+import Security.Authorisation
 import Errors
 import Security.AuthToken
 import Security.Security
@@ -16,7 +17,6 @@ import Data.Aeson
 import Data.Binary.Builder
 import Data.ByteString.Lazy   (toStrict)
 import Data.Text.Encoding     (decodeUtf8, encodeUtf8)
-import Data.Text              (Text)
 import GHC.Generics           (Generic)
 import Servant
 import Web.Cookie
@@ -33,7 +33,7 @@ instance FromJSON Login where
 routeLogin :: SecurityApi m
            -> StorageApi
            -> Login
-           -> Handler (Headers '[Header "Set-Cookie" Text] ())
+           -> Handler (Headers '[Header "Set-Cookie" CookieHeader] ())
 routeLogin securityApi storageApi (Login uname pw) = do
     maybeSaltPw <- liftIO $ getSaltAndPassword storageApi uname
     case maybeSaltPw of
@@ -42,7 +42,8 @@ routeLogin securityApi storageApi (Login uname pw) = do
             let checkedPw = hashPasswordWithSalt securityApi salt pw
             in if checkedPw == storedPw
                    then let (AuthToken authToken) = signAndEncode securityApi mempty
-                            cookie = decodeUtf8
+                            cookie = CookieHeader
+                                   . decodeUtf8
                                    . toStrict
                                    . toLazyByteString
                                    . renderSetCookie 

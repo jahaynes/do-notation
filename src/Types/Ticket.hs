@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Text       (Text)
 import Data.UUID       (UUID)
 import GHC.Generics    (Generic)
+import Servant         (FromHttpApiData (..))
 
 newtype TicketId =
     TicketId { ti_value :: UUID
@@ -20,6 +21,9 @@ instance ToJSON TicketId where
 
 instance FromJSON TicketId where
     parseJSON u = TicketId <$> parseJSON u
+
+instance FromHttpApiData TicketId where
+    parseUrlPiece tid = TicketId <$> parseUrlPiece tid
 
 newtype TicketName =
     TicketName { tn_value :: Text

@@ -6,7 +6,7 @@ import Servant    (FromHttpApiData (..))
 
 newtype AuthToken =
     AuthToken { at_value :: Text
-              } deriving Show
+              }
 
 instance FromHttpApiData AuthToken where
     parseUrlPiece txt = AuthToken <$> parseUrlPiece txt

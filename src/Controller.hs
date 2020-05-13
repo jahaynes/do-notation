@@ -21,49 +21,48 @@ import Security.Authorisation
 import Security.Security
 import Storage.StorageApi
 import Types.Board
+import Types.Column
 import Types.Ticket
 
-import Data.Text                (Text)
-import Data.UUID                (UUID)
 import Network.Wai.Handler.Warp (run)
 import Servant
 
 type DoAPI =
 
         "login" :> ReqBody '[JSON] Login
-                :> Post '[JSON] (Headers '[Header "Set-Cookie" Text] ())
+                :> Post '[JSON] (Headers '[Header "Set-Cookie" CookieHeader] ())
 
-   :<|> "logout" :> Post '[JSON] (Headers '[Header "Set-Cookie" Text] ())
+   :<|> "logout" :> Post '[JSON] (Headers '[Header "Set-Cookie" CookieHeader] ())
 
    :<|> "user" :> ReqBody '[JSON] CreateUser
                :> Post '[JSON] ()
 
-   :<|> "board" :> Header "Cookie" Text
+   :<|> "board" :> Header "Cookie" CookieHeader
                 :> QueryParam "board" BoardName
                 :> Get '[JSON] (Authed Board)
 
-   :<|> "column" :> Header "Cookie" Text
-                 :> QueryParam "columnId" UUID
+   :<|> "column" :> Header "Cookie" CookieHeader
+                 :> QueryParam "columnId" ColumnId
                  :> Get '[JSON] (Authed [Ticket])
 
-   :<|> "ticket" :> Header "Cookie" Text
-                 :> QueryParam "columnId" UUID
-                 :> QueryParam "ticketId" UUID
+   :<|> "ticket" :> Header "Cookie" CookieHeader
+                 :> QueryParam "columnId" ColumnId
+                 :> QueryParam "ticketId" TicketId
                  :> Get '[JSON] (Authed Ticket)
 
-   :<|> "ticket" :> Header "Cookie" Text
+   :<|> "ticket" :> Header "Cookie" CookieHeader
                  :> ReqBody '[JSON] CreateTicket
                  :> Post '[JSON] (Authed TicketId)
 
-   :<|> "ticket" :> Header "Cookie" Text
+   :<|> "ticket" :> Header "Cookie" CookieHeader
                  :> ReqBody '[JSON] UpdateTicket
                  :> Put '[JSON] (Authed ())
 
-   :<|> "ticket" :> Header "Cookie" Text
+   :<|> "ticket" :> Header "Cookie" CookieHeader
                  :> ReqBody '[JSON] DeleteTicket
                  :> Delete '[JSON] (Authed ())
 
-   :<|> "ticket" :> "move" :> Header "Cookie" Text
+   :<|> "ticket" :> "move" :> Header "Cookie" CookieHeader
                            :> ReqBody '[JSON] MoveTicket
                            :> Post '[JSON] (Authed ())
 

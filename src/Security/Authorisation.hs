@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Security.Authorisation ( Authed
+                              , CookieHeader (..)
                               , withAuthorisation
                               ) where
 
@@ -14,23 +15,33 @@ import Data.ByteString.Lazy       (ByteString)
 import Data.Text                  (Text)
 import Data.Text.Encoding         (encodeUtf8, decodeUtf8')
 import Web.Cookie
+import Servant                    (FromHttpApiData (..), ToHttpApiData(..))
+
+newtype CookieHeader =
+    CookieHeader Text
+
+instance (ToHttpApiData CookieHeader) where
+    toUrlPiece (CookieHeader ch) = toUrlPiece ch
 
 newtype Authed a = Authed a
 
 instance ToJSON a => ToJSON (Authed a) where
     toJSON (Authed a) = toJSON a
 
+instance FromHttpApiData CookieHeader where
+    parseUrlPiece ch = CookieHeader <$> parseUrlPiece ch
+
 withAuthorisation :: Monad m => SecurityApi n
-                             -> Maybe Text        -- TODO Cookie?
+                             -> Maybe CookieHeader
                              -> ExceptT ErrorResponse m a
                              -> ExceptT ErrorResponse m (Authed a)
-withAuthorisation securityApi mCookieTxt handler = do
+withAuthorisation securityApi mCookieHeader handler = do
 
-    cookieTxt <- case mCookieTxt of
-                     Nothing        -> err' 401 "No authorisation supplied."
-                     Just cookieTxt -> pure cookieTxt
+    cookieHeader <- case mCookieHeader of
+                        Nothing           -> err' 401 "No authorisation supplied."
+                        Just cookieHeader -> pure cookieHeader
 
-    authToken <- case getAuthTokenCookie cookieTxt of
+    authToken <- case getAuthTokenCookie cookieHeader of
                      Left e -> let msg = "Could not parse auth: " <> e
                                in err' 400 msg
                      Right r -> pure r
@@ -39,8 +50,8 @@ withAuthorisation securityApi mCookieTxt handler = do
         then Authed <$> handler
         else err' 401 "Auth token rejected."
 
-getAuthTokenCookie :: Text -> Either ByteString AuthToken
-getAuthTokenCookie cookieTxt = do
+getAuthTokenCookie :: CookieHeader -> Either ByteString AuthToken
+getAuthTokenCookie (CookieHeader cookieTxt) = do
 
     let cookies = parseCookies $ encodeUtf8 cookieTxt
 

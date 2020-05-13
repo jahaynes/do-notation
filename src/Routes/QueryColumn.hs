@@ -9,16 +9,15 @@ import Types.Ticket
 
 import Control.Monad.Trans.Class  (lift)
 import Control.Monad.Trans.Except (ExceptT)
-import Data.UUID                  (UUID)
 
 routeQueryColumn :: StorageApi
-                 -> Maybe UUID -- TODO type
+                 -> Maybe ColumnId
                  -> ExceptT ErrorResponse IO [Ticket]
 routeQueryColumn storageApi mColumnId =
 
     catchAll "Could not query column." $ do
         columnId <- getColumnId mColumnId
-        lift (getColumn storageApi (ColumnId columnId))
+        lift (getColumn storageApi columnId)
 
     where
     getColumnId Nothing   = err' 400 "No columnId supplied."

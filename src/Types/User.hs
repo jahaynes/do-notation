@@ -21,4 +21,4 @@ newtype Salt =
 
 newtype HashedSaltedPassword = 
     HashedSaltedPassword ByteString
-      deriving (Eq, Show)    --TODO remove Show
+      deriving Eq

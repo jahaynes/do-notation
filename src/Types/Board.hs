@@ -8,7 +8,6 @@ import Types.Json
 
 import Control.DeepSeq            (NFData)
 import Data.Aeson
-import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Text                  (Text)
 import Data.Vector                (Vector)
 import GHC.Generics               (Generic)
@@ -34,6 +33,3 @@ instance ToJSON Board where
     toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop
                                           , unwrapUnaryRecords = True
                                           }
-
-instance Show Board where
-    show = unpack . encode
