@@ -32,4 +32,4 @@ routeCreateTicket storageApi (CreateTicket boardName name body) =
     catchAll "Could not create ticket." $
         lift (getDefaultColumn storageApi boardName) >>= \case
             Just defaultColumnId -> lift (createTicket storageApi defaultColumnId name body)
-            Nothing              -> err' 500 "No default column found."
+            Nothing              -> err 500 "No default column found."

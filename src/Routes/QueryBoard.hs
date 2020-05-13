@@ -19,5 +19,5 @@ routeQueryBoard storageApi mBoardName =
         lift (getBoard storageApi boardName)
 
     where
-    getBoardName Nothing   = err' 400 "No board queried."
+    getBoardName Nothing   = err 400 "No board queried."
     getBoardName (Just bn) = pure bn

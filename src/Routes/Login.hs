@@ -12,13 +12,13 @@ import Storage.StorageApi
 import Types.Json         (chop)
 import Types.User         (UserId, RawPassword)
 
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Class  (lift)
+import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Binary.Builder
-import Data.ByteString.Lazy   (toStrict)
-import Data.Text.Encoding     (decodeUtf8, encodeUtf8)
-import GHC.Generics           (Generic)
-import Servant
+import Data.ByteString.Lazy       (toStrict)
+import Data.Text.Encoding         (decodeUtf8, encodeUtf8)
+import GHC.Generics               (Generic)
 import Web.Cookie
 
 data Login =
@@ -30,12 +30,12 @@ instance FromJSON Login where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeLogin :: SecurityApi m
-           -> StorageApi
-           -> Login
-           -> Handler (Headers '[Header "Set-Cookie" CookieHeader] ())
-routeLogin securityApi storageApi (Login uname pw) = do
-    maybeSaltPw <- liftIO $ getSaltAndPassword storageApi uname
+routeLogin' :: SecurityApi m
+            -> StorageApi
+            -> Login
+            -> ExceptT ErrorResponse IO CookieHeader
+routeLogin' securityApi storageApi (Login uname pw) = do
+    maybeSaltPw <- lift (getSaltAndPassword storageApi uname)
     case maybeSaltPw of
         Nothing -> err 401 "Bad username or password."
         Just (salt, storedPw) ->
@@ -53,5 +53,5 @@ routeLogin securityApi storageApi (Login uname pw) = do
                                                       , setCookiePath     = Just "/"
                                                       , setCookieSameSite = Just sameSiteStrict
                                                       , setCookieValue    = encodeUtf8 authToken }
-                        in pure . addHeader cookie $ ()
+                        in pure cookie
                 else err 401 "Bad username or password."

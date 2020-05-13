@@ -4,7 +4,6 @@
 module Errors ( ErrorResponse
               , catchAll
               , handle
-              , err'
               , err
               ) where
 
@@ -18,16 +17,8 @@ import Servant                    (Handler, ServerError (..), throwError)
 data ErrorResponse =
     ErrorResponse !Int !ByteString
 
---TODO remove
-err :: Int -> ByteString -> Handler a
-err code msg = throwError $ ServerError { errHTTPCode     = code
-                                        , errReasonPhrase = ""
-                                        , errBody         = msg
-                                        , errHeaders      = []
-                                        }
-
-err' :: Monad m => Int -> ByteString -> ExceptT ErrorResponse m a
-err' code msg = throwE $ ErrorResponse code msg
+err :: Monad m => Int -> ByteString -> ExceptT ErrorResponse m a
+err code msg = throwE $ ErrorResponse code msg
 
 catchAll :: (MonadCatch m, MonadIO m, NFData a)
          => ByteString

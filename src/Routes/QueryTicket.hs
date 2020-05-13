@@ -24,8 +24,8 @@ routeQueryTicket storageApi mColumnId mTicketId = do
              (lift $ getTicket storageApi columnId ticketId)
 
     where
-    getColumnId Nothing    = err' 400 "columnId not supplied."
+    getColumnId Nothing    = err 400 "columnId not supplied."
     getColumnId (Just cid) = pure cid
 
-    getTicketId Nothing    = err' 400 "ticketId not supplied."
+    getTicketId Nothing    = err 400 "ticketId not supplied."
     getTicketId (Just tid) = pure tid

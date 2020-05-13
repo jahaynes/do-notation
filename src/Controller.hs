@@ -71,10 +71,11 @@ type DoAPI =
 server :: SecurityApi IO -> StorageApi -> Server DoAPI
 server securityApi storageApi =
 
-         -- TODO handlers up here
-         routeLogin securityApi storageApi
+         (\login -> handle 
+                  $ routeLogin' securityApi storageApi login >>= \cookieHeader -> pure $ addHeader cookieHeader ()
+                  )
 
-    :<|> routeLogout securityApi storageApi
+    :<|> (pure $ addHeader routeLogout ())
 
          -- TODO rename routeSignup ?
     :<|> routeCreateUser securityApi storageApi

@@ -20,5 +20,5 @@ routeQueryColumn storageApi mColumnId =
         lift (getColumn storageApi columnId)
 
     where
-    getColumnId Nothing   = err' 400 "No columnId supplied."
+    getColumnId Nothing   = err 400 "No columnId supplied."
     getColumnId (Just ci) = pure ci
