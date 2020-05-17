@@ -6,46 +6,54 @@ module Storage.Cassandra.Queries where
 import Storage.Cassandra.Common (params)
 import Storage.StorageApi
 import Types.Board
+import Types.BoardId
 import Types.Column
 import Types.Ticket
 import Types.User
 
-import           Data.ByteString              (ByteString)
-import qualified Data.ByteString.Lazy  as LBS
-import           Data.Int                     (Int32)
-import           Data.Text                    (Text)
-import qualified Data.Vector           as V
-import           Data.Vector.Algorithms.Heap  (sort)
-import           Data.UUID                    (UUID)
-import qualified Data.UUID.V4          as U
+import           Data.ByteString                    (ByteString)
+import qualified Data.ByteString.Lazy        as LBS
+import           Data.Int                           (Int32)
+import           Data.List                   as L   (sort)
+import           Data.Maybe                         (catMaybes)
+import           Data.Text                          (Text)
+import           Data.Vector                        (Vector)
+import qualified Data.Vector                 as V
+import           Data.Vector.Algorithms.Heap as V   (sort)
+import           Data.UUID                          (UUID)
+import qualified Data.UUID.V4                as U
 import           Database.CQL.IO 
-import           Database.CQL.Protocol        (Blob (Blob))
+import           Database.CQL.Protocol              (Blob (Blob))
+import           Safe                               (headMay)
 
 createApi :: ClientState -> StorageApi
 createApi c = 
-    StorageApi { createUser         = createUserImpl c
+    StorageApi { createPassword     = createPasswordImpl c
                , getSaltAndPassword = getSaltAndPasswordImpl c
-               , createBoardColumn  = createBoardColumnImpl c
+               , createUser         = createUserImpl c
+               , createBoard        = createBoardImpl c
+               , createColumn       = createColumnImpl c
                , getBoard           = getBoardImpl c
+               , getBoards          = getBoardsImpl c
                , getDefaultColumn   = getDefaultColumnImpl c
-               , getColumn          = getColumnImpl c
                , createTicket       = createTicketImpl c
                , updateTicket       = updateTicketImpl c
                , deleteTicket       = deleteTicketImpl c
                , getTicket          = getTicketImpl c
+               , getColumn          = getColumnImpl c
                , moveTicket         = moveTicketImpl c
                }
 
 blob :: ByteString -> Blob
 blob = Blob . LBS.fromStrict
 
-createUserImpl :: ClientState -> UserId -> Salt -> HashedSaltedPassword -> IO ()
-createUserImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
-    runClient c $ write cqlCreateUser (params (userId, blob salt, blob hspw))
+createPasswordImpl :: ClientState -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createPasswordImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
+    runClient c $ write cqlCreatePassword (params (userId, blob salt, blob hspw))
     where
-    cqlCreateUser :: PrepQuery W (Text, Blob, Blob) ()
-    cqlCreateUser =
-        " INSERT INTO do_notation.user            \
+    cqlCreatePassword :: PrepQuery W (Text, Blob, Blob) ()
+    cqlCreatePassword =
+        " INSERT INTO do_notation.password        \
         \ (userid, salt, hashsaltpassword) VALUES \
         \ (     ?,    ?,                ?)        "
 
@@ -60,51 +68,111 @@ getSaltAndPasswordImpl c (UserId userid) =
     cqlGetSaltAndPassword :: PrepQuery R (Identity Text) (Blob, Blob)
     cqlGetSaltAndPassword =
         " SELECT salt, hashsaltpassword \
-        \ FROM do_notation.user         \
+        \ FROM do_notation.password     \
         \ WHERE userid = ?              "
 
-getBoardImpl :: ClientState -> BoardName -> IO Board
-getBoardImpl c (BoardName boardName) = runClient c $
-    asBoard <$> query cqlGetBoard (defQueryParams One (Identity boardName))
+createUserImpl :: ClientState -> UserId -> BoardId -> IO ()
+createUserImpl c (UserId uid) (BoardId bid) =
+    runClient c $ write cqlCreateUser (params (uid, bid))
     where
-    asBoard :: [(Int32, Text, UUID)] -> Board
-    asBoard = Board
-            . V.map (\(_, cn, ci) -> Column (ColumnName cn) (ColumnId ci))
-            . V.modify sort
-            . V.fromList
+    cqlCreateUser :: PrepQuery W (Text, UUID) ()
+    cqlCreateUser =
+        " INSERT INTO do_notation.user \
+        \ (userid, boardid) VALUES     \
+        \ (     ?,       ?)            "
 
-    cqlGetBoard :: PrepQuery R (Identity Text) (Int32, Text, UUID)
+getBoardImpl :: ClientState -> BoardId -> IO (Maybe Board)
+getBoardImpl c bi@(BoardId boardId) = runClient c $ do
+    mBoardName <- query1 cqlGetBoard (defQueryParams One (Identity boardId))
+    case mBoardName of
+        Nothing            -> pure Nothing
+        Just (Identity bn) -> do
+            columns <- asColumns <$> query cqlGetColumns (defQueryParams One (Identity boardId))
+            pure . Just $ Board bi (BoardName bn) columns
+
+    where
+    asColumns :: [(Int32, Text, UUID)] -> Vector Column
+    asColumns = V.map (\(_, cn, ci) -> Column bi (ColumnId ci) (ColumnName cn))
+              . V.modify V.sort
+              . V.fromList
+
+    cqlGetBoard :: PrepQuery R (Identity UUID) (Identity Text)
     cqlGetBoard =
-        " SELECT position, columnname, columnid \
-        \ FROM do_notation.board                \
-        \ WHERE name = ?                        "
+        " SELECT boardname       \
+        \ FROM do_notation.board \
+        \ WHERE boardid = ?      "
 
-getDefaultColumnImpl :: ClientState -> BoardName -> IO (Maybe ColumnId)
-getDefaultColumnImpl c (BoardName boardName) =
-    runClient c $
-        query1 cqlGetDefaultColumn (params (Identity boardName)) >>= \case
-            Nothing             -> pure Nothing
-            Just (Identity row) -> pure $ Just (ColumnId row)
+    cqlGetColumns :: PrepQuery R (Identity UUID) (Int32, Text, UUID)
+    cqlGetColumns =
+        " SELECT position, columnname, columnid \
+        \ FROM do_notation.column               \
+        \ WHERE boardid = ?                     "
+
+getBoardsImpl :: ClientState -> UserId -> IO [(BoardId, BoardName)]
+getBoardsImpl c (UserId uid) = runClient c $ do
+    boardIds <- fmap toBoardId <$> query cqlGetBoards (defQueryParams One (Identity uid))
+    catMaybes <$> mapM withBoardName boardIds
+    where
+    toBoardId (Identity uuid) = BoardId uuid
+    cqlGetBoards :: PrepQuery R (Identity Text) (Identity UUID)
+    cqlGetBoards =
+        " SELECT boardid        \
+        \ FROM do_notation.user \
+        \ WHERE userid = ?      "
+
+withBoardName :: BoardId -> Client (Maybe (BoardId, BoardName))
+withBoardName b@(BoardId bi) =
+    fmap toBoardName <$> query1 cqlGetBoardName (defQueryParams One (Identity bi))
+    where
+    toBoardName (Identity txt) = (b, BoardName txt)
+    cqlGetBoardName :: PrepQuery R (Identity UUID) (Identity Text)
+    cqlGetBoardName =
+        " SELECT boardname       \
+        \ FROM do_notation.board \
+        \ WHERE boardid = ?      "
+
+createBoardImpl :: ClientState -> BoardName -> IO BoardId
+createBoardImpl c (BoardName name) = do
+    freshBid <- U.nextRandom
+    runClient c $ write cqlCreateBoard (params (freshBid, name))
+    pure $ BoardId freshBid
 
     where
-    cqlGetDefaultColumn :: PrepQuery R (Identity Text) (Identity UUID)
-    cqlGetDefaultColumn =
-        " SELECT columnid        \
-        \ FROM do_notation.board \
-        \ WHERE name = ?         "
+    cqlCreateBoard :: PrepQuery W (UUID, Text) ()
+    cqlCreateBoard =
+        " INSERT INTO do_notation.board \
+        \ (boardid, boardname) VALUES   \
+        \ (      ?,         ?)          "
 
-createBoardColumnImpl :: ClientState -> BoardName -> ColumnPosition -> ColumnName -> IO ColumnId
-createBoardColumnImpl c (BoardName boardName) (ColumnPosition pos) (ColumnName name) = do
+
+getDefaultColumnImpl :: ClientState -> BoardId -> IO (Maybe ColumnId)
+getDefaultColumnImpl c (BoardId boardId) = runClient c $
+    asColumnId <$> query cqlGetDefaultColumn (params (Identity boardId))
+
+    where
+    asColumnId :: [(Int32, UUID)] -> Maybe ColumnId
+    asColumnId = headMay
+               . map (\(_, columnId) -> ColumnId columnId)
+               . L.sort
+
+    cqlGetDefaultColumn :: PrepQuery R (Identity UUID) (Int32, UUID)
+    cqlGetDefaultColumn =
+        " SELECT position, columnid \
+        \ FROM column               \
+        \ WHERE boardId = ?         "
+
+createColumnImpl :: ClientState -> BoardId -> ColumnPosition -> ColumnName -> IO ColumnId
+createColumnImpl c (BoardId boardId) (ColumnPosition pos) (ColumnName name) = do
     freshCid <- U.nextRandom
-    runClient c $ write cqlCreateBoardColumn (params (boardName, fromIntegral pos, name, freshCid))
+    runClient c $ write cqlCreateColumn (params (boardId, freshCid, fromIntegral pos, name))
     pure $ ColumnId freshCid
 
     where
-    cqlCreateBoardColumn :: PrepQuery W (Text, Int32, Text, UUID) ()
-    cqlCreateBoardColumn =
-        " INSERT INTO do_notation.board                 \
-        \ (name, position, columnname, columnid) VALUES \
-        \ (   ?,        ?,          ?,        ?)        "
+    cqlCreateColumn :: PrepQuery W (UUID, UUID, Int32, Text) ()
+    cqlCreateColumn =
+        " INSERT INTO do_notation.column                   \
+        \ (boardid, columnid, position, columnname) VALUES \
+        \ (      ?,        ?,        ?,          ?)        "
 
 createTicketImpl :: ClientState -> ColumnId -> TicketName -> TicketContent -> IO TicketId
 createTicketImpl c (ColumnId cid) (TicketName name) (TicketContent content) = do
@@ -168,17 +236,20 @@ moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -
 moveTicketImpl c _ from to tid
     | from == to = pure ()
     | otherwise = runClient c $ do
-        Ticket _ name content <- getTicketImpl' from tid
+        Ticket _ name content <- getTicketImpl' from tid    -- TODO maybe!
         _ <- createTicketImpl' to tid name content
         deleteTicketImpl' from tid
 
+-- TODO maybe!
 getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO Ticket
 getTicketImpl c cid tid = runClient c $ getTicketImpl' cid tid
 
+-- TODO maybe!
 getTicketImpl' :: ColumnId -> TicketId -> Client Ticket
-getTicketImpl' (ColumnId cid) (TicketId tid) = query1 cqlGetTicket (params (cid, tid)) >>= \case
-    Nothing -> error "no such ticket"
-    Just (id_, name, content) -> pure $ Ticket (TicketId id_) (TicketName name) (TicketContent content)
+getTicketImpl' (ColumnId cid) (TicketId tid) =
+    query1 cqlGetTicket (params (cid, tid)) >>= \case
+        Nothing -> error "no such ticket"
+        Just (id_, name, content) -> pure $ Ticket (TicketId id_) (TicketName name) (TicketContent content)
 
 cqlGetTicket :: PrepQuery R (UUID, UUID) (UUID, Text, Text)
 cqlGetTicket =

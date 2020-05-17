@@ -1,7 +1,7 @@
 
 const moveTicket =
-    async (boardName, from, to, ticket) => {
-        const body = { 'board': boardName
+    async (boardId, from, to, ticket) => {
+        const body = { 'board': boardId
                      , 'from': from
                      , 'to': to
                      , 'ticket': ticket
@@ -15,12 +15,12 @@ const moveTicket =
                 }
             });
 
-        fetchBoard(boardName);
+        fetchBoard(boardId);
     }
 
 const createTicket = 
-    async (boardName, name, content) => {
-        const body = { 'board': boardName
+    async (boardId, name, content) => {
+        const body = { 'boardId': boardId
                      , 'name': name
                      , 'content': content
                      };
@@ -33,7 +33,7 @@ const createTicket =
                 }
             });
 
-        fetchBoard(boardName);
+        fetchBoard(boardId);
     }
 
 const restUpdateTicket =
@@ -51,10 +51,12 @@ const restUpdateTicket =
                     'Content-Type': 'application/json',
                 }
             });
+
+        //TODO check status
     }
 
 const restDeleteTicket = 
-    async (boardName, columnId, ticketId) => {
+    async (boardId, columnId, ticketId) => {
         const body = { 'columnId': columnId
                      , 'ticketId': ticketId
                      };
@@ -66,19 +68,29 @@ const restDeleteTicket =
                     'Content-Type': 'application/json'
                 }
             });
-        fetchBoard(boardName);
+
+        //TODO check status
+        fetchBoard(boardId);
+    }
+
+const fetchBoardsForUser = //TODO check status, add authFailHandler
+    async () => {
+        const response = await fetch('/boards');
+        // console.log(response.status);
+        const body = await response.json();
+        buildBoards(body);
     }
 
 const fetchBoard =
-    async (boardName, authFailHandler) => {
-        const response = await fetch('/board?board=' + boardName);
+    async (boardId, authFailHandler) => {
+        const response = await fetch('/board?board=' + boardId);
 
         switch (response.status) {
 
             case 200:
                 const board = await response.json();
-                buildColumnHeaders(board);
-                fetchColumns(board, authFailHandler);
+                buildColumnHeaders(board.columns);
+                fetchColumns(board.columns, authFailHandler);
                 break;
 
             case 401:
@@ -88,12 +100,12 @@ const fetchBoard =
     }
 
 const fetchColumns =
-    async (board, authFailHandler) => {
+    async (columns, authFailHandler) => {
 
-        for (const columnNo in board) {
+        for (const columnNo in columns) {
             
             let err = false;
-            const columnId = board[columnNo].id;
+            const columnId = columns[columnNo].columnid;
 
             const response = await fetch('/column?columnId=' + columnId);
 
@@ -105,8 +117,8 @@ const fetchColumns =
                     break;
 
                 case 200:
-                    const column   = await response.json();
-                    const columnName = document.getElementById('list_' + board[columnNo].name);
+                    const column = await response.json();
+                    const columnName = document.getElementById('list_' + columns[columnNo].name);
                     for (const ticketNo in column) {
                         columnName.appendChild(ticketAsElement(columnId, column[ticketNo]));
                     }

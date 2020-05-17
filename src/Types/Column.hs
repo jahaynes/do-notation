@@ -3,6 +3,7 @@
 
 module Types.Column where
 
+import Types.BoardId
 import Types.Json
 
 import Control.DeepSeq            (NFData)
@@ -14,8 +15,9 @@ import GHC.Generics               (Generic)
 import Servant                    (FromHttpApiData (..))
 
 data Column = 
-    Column { c_name :: !ColumnName
-           , c_id   :: !ColumnId
+    Column { c_boardid  :: !BoardId
+           , c_columnid :: !ColumnId
+           , c_name     :: !ColumnName
            } deriving (Generic, NFData)
 
 instance ToJSON Column where

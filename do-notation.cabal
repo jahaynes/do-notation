@@ -13,8 +13,8 @@ executable do-notation
   ghc-options:         -Wall -O3
   other-modules:       Controller,
                        Errors,
+                       Routes.CreatePassword,
                        Routes.CreateTicket,
-                       Routes.CreateUser,
                        Routes.DeleteTicket,
                        Routes.Login,
                        Routes.Logout,
@@ -34,8 +34,9 @@ executable do-notation
                        Storage.StorageApi,
                        Storage.Sqlite,
                        Storage.Sqlite.SqliteTypes,
-                       Types.Column,
                        Types.Board,
+                       Types.BoardId,
+                       Types.Column,
                        Types.Json,
                        Types.Ticket,
                        Types.User

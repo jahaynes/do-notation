@@ -6,27 +6,32 @@ module Storage.Sqlite where
 import Storage.Sqlite.SqliteTypes
 import Storage.StorageApi
 import Types.Board
+import Types.BoardId
 import Types.Column
 import Types.Ticket
 import Types.User
 
-import           Data.Maybe                       (fromJust)
-import           Data.Ord
+import           Data.List                   as L (sort)
+import           Data.Maybe                       (catMaybes, fromJust)
 import           Data.Text                        (Text)
 import           Data.UUID                        (fromText, toText)
 import qualified Data.UUID.V4                as U
-import           Data.Vector.Algorithms.Heap      (sortBy)
+import           Data.Vector                      (Vector)
+import           Data.Vector.Algorithms.Heap as V (sort)
 import qualified Data.Vector                 as V
 import           Database.SQLite.Simple
-
+import           Safe                             (headMay)
 createSqlite :: FilePath -> IO StorageApi
 createSqlite filename = do
     c <- open filename
     createSqlTables c
-    pure $ StorageApi { createUser         = createUserImpl c
+    pure $ StorageApi { createPassword     = createPasswordImpl c
                       , getSaltAndPassword = getSaltAndPasswordImpl c
-                      , createBoardColumn  = createBoardColumnImpl c
+                      , createUser         = createUserImpl c
+                      , createBoard        = createBoardImpl c
+                      , createColumn       = createColumnImpl c
                       , getBoard           = getBoardImpl c
+                      , getBoards          = getBoardsImpl c
                       , getDefaultColumn   = getDefaultColumnImpl c
                       , createTicket       = createTicketImpl c
                       , updateTicket       = updateTicketImpl c
@@ -34,15 +39,15 @@ createSqlite filename = do
                       , getTicket          = getTicketImpl c
                       , getColumn          = getColumnImpl c
                       , moveTicket         = moveTicketImpl c
-                      } 
+                      }
 
-createUserImpl :: Connection -> UserId -> Salt -> HashedSaltedPassword -> IO ()
-createUserImpl c userId salt hashedSaltedPassword =
-    execute c sqlCreateUser (UserRow userId salt hashedSaltedPassword)
+createPasswordImpl :: Connection -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createPasswordImpl c userId salt hashedSaltedPassword =
+    execute c sqlCreatePassword (UserRow userId salt hashedSaltedPassword)
     where
-    sqlCreateUser :: Query
-    sqlCreateUser =
-        " INSERT INTO user                        \
+    sqlCreatePassword :: Query
+    sqlCreatePassword =
+        " INSERT INTO password                    \
         \ (userId, salt, hashsaltpassword) VALUES \
         \ (     ?,    ?,                ?)        "
 
@@ -56,53 +61,117 @@ getSaltAndPasswordImpl c (UserId userId) =
     sqlGetSaltAndPassword :: Query
     sqlGetSaltAndPassword =
         " SELECT salt, hashsaltpassword \
-        \ FROM user                     \
+        \ FROM password                 \
         \ WHERE userid = ?              "
 
-createBoardColumnImpl :: Connection -> BoardName -> ColumnPosition -> ColumnName -> IO ColumnId
-createBoardColumnImpl c boardName columnPosition colName = do
+createUserImpl :: Connection -> UserId -> BoardId -> IO ()
+createUserImpl c userId boardId =
+    execute c sqlCreateUser (UserBoard userId boardId)
+    where
+    sqlCreateUser :: Query
+    sqlCreateUser =
+        " INSERT INTO user         \
+        \ (userId, boardid) VALUES \
+        \ (     ?,       ?)        "
+
+createBoardImpl :: Connection -> BoardName -> IO BoardId
+createBoardImpl c boardName = do
+    freshBid <- BoardId <$> U.nextRandom
+    execute c sqlCreateBoard (SqlBoardId freshBid, SqlBoardName boardName)
+    pure freshBid
+    where
+    sqlCreateBoard :: Query
+    sqlCreateBoard =
+        " INSERT INTO board           \
+        \ (boardid, boardname) VALUES \
+        \ (      ?,         ?)        "
+
+createColumnImpl :: Connection -> BoardId -> ColumnPosition -> ColumnName -> IO ColumnId
+createColumnImpl c boardId pos name = do
     freshCid <- ColumnId <$> U.nextRandom
-    execute c sqlCreateBoardColumn (BoardRow boardName columnPosition colName freshCid)
+    execute c sqlCreateColumn ( SqlBoardId boardId
+                              , SqlColumnId freshCid
+                              , SqlColumnPosition pos
+                              , SqlColumnName name )
     pure freshCid
-
     where
-    sqlCreateBoardColumn :: Query
-    sqlCreateBoardColumn =
-        " INSERT INTO board                             \
-        \ (name, position, columnname, columnid) VALUES \
-        \ (   ?,        ?,          ?,        ?)        "
+    sqlCreateColumn :: Query
+    sqlCreateColumn =
+        " INSERT INTO column                               \
+        \ (boardid, columnid, position, columnname) VALUES \
+        \ (      ?,        ?,        ?,          ?)        "
 
-getBoardImpl :: Connection -> BoardName -> IO Board
-getBoardImpl c (BoardName boardName) =
-    asBoard <$> query c sqlGetBoard (Only boardName)
+getBoardImpl :: Connection -> BoardId -> IO (Maybe Board)
+getBoardImpl c boardId = 
+    query c sqlGetBoard (Only (SqlBoardId boardId)) >>= \case
+        []                       -> pure Nothing
+        [SqlBoardName boardName] -> do
+            columns <- asColumns <$> query c sqlGetColumns (Only (SqlBoardId boardId))
+            pure . Just $ Board boardId boardName columns
+        _                        -> error "too many boardnames"
     where
-    asBoard :: [BoardRow] -> Board
-    asBoard = Board
-            . V.map (\(BoardRow _ _ cn ci) -> Column cn ci)
-            . V.modify (sortBy . comparing $ \(BoardRow _ pos _ _) -> pos)
-            . V.fromList
+    asColumns :: [SqlColumnRow] -> Vector Column
+    asColumns = V.map asColumn
+              . V.modify V.sort
+              . V.fromList
+        where
+        asColumn :: SqlColumnRow -> Column
+        asColumn (SqlColumnRow _ name columnId) = Column boardId columnId name
 
     sqlGetBoard :: Query
     sqlGetBoard =
-        " SELECT name, position, columnname, columnid \
-        \ FROM board                                  \
-        \ WHERE name = ?                              "
+        " SELECT boardname  \
+        \ FROM board        \
+        \ WHERE boardid = ? "
 
-getDefaultColumnImpl :: Connection -> BoardName -> IO (Maybe ColumnId)
-getDefaultColumnImpl c (BoardName boardName) =
-    asColumnId <$> query c sqlGetDefaultColumn (Only boardName)
+    sqlGetColumns :: Query
+    sqlGetColumns =
+        " SELECT position, columnname, columnid \
+        \ FROM column                           \
+        \ WHERE boardid = ?                     "
 
+getBoardsImpl :: Connection -> UserId -> IO [(BoardId, BoardName)]
+getBoardsImpl c userId = do
+    boardIds <- map handle <$> query c sqlGetBoards (SqlUserId userId)
+    catMaybes <$> mapM (withBoardName c) boardIds
+    where
+    handle :: SqlBoardId -> BoardId
+    handle (SqlBoardId boardId) = boardId
+
+    sqlGetBoards :: Query
+    sqlGetBoards =
+        " SELECT boardid   \
+        \ FROM user        \
+        \ WHERE userid = ? "
+
+withBoardName :: Connection -> BoardId -> IO (Maybe (BoardId, BoardName))
+withBoardName c boardId = do
+    handle <$> query c sqlGetBoardName (SqlBoardId boardId)
+    where
+    handle :: [SqlBoardName] -> Maybe (BoardId, BoardName)
+    handle                       [] = Nothing
+    handle [SqlBoardName boardName] = Just (boardId, boardName)
+    handle                        _ = error "Too many boardnames"
+    sqlGetBoardName :: Query
+    sqlGetBoardName =
+        " SELECT boardname  \
+        \ FROM board        \
+        \ WHERE boardid = ? "
+
+getDefaultColumnImpl :: Connection -> BoardId -> IO (Maybe ColumnId)
+getDefaultColumnImpl c boardId =
+    asColumnId <$> query c sqlGetDefaultColumn (Only (SqlBoardId boardId))
     where
     asColumnId :: [(Int, Text)] -> Maybe ColumnId
-    asColumnId       [] = Nothing
-    asColumnId [(_, x)] = ColumnId <$> fromText x
-    asColumnId       xs = error $ "Too many column ids: " ++ show xs
+    asColumnId = headMay
+               . map (\(_, columnId) -> ColumnId . fromJust . fromText $ columnId)
+               . L.sort
 
     sqlGetDefaultColumn :: Query
     sqlGetDefaultColumn =
-        " SELECT min(position), columnid \
-        \ FROM board                     \
-        \ WHERE name = ?                 "         
+        " SELECT position, columnid \
+        \ FROM column               \
+        \ WHERE boardId = ?         "
 
 createTicketImpl :: Connection -> ColumnId -> TicketName -> TicketContent -> IO TicketId
 createTicketImpl c (ColumnId cid) (TicketName name) (TicketContent content) = do
@@ -190,13 +259,25 @@ sqlGetTicket =
 createSqlTables :: Connection -> IO ()
 createSqlTables c = do
     execute_ c schemaCreateUser
+    execute_ c schemaCreatePassword
     execute_ c schemaCreateBoard
+    execute_ c schemaCreateColumn
     execute_ c schemaCreateTicket
     where
+
     schemaCreateUser :: Query
     schemaCreateUser =
+        " CREATE TABLE IF NOT EXISTS          \
+        \   user                              \
+        \     ( userid  TEXT                  \
+        \     , boardid UUID                  \
+        \     , PRIMARY KEY (userid, boardid) \
+        \     )                               "
+
+    schemaCreatePassword :: Query
+    schemaCreatePassword =
         " CREATE TABLE IF NOT EXISTS    \
-        \   user                        \
+        \   password                    \
         \     ( userid TEXT PRIMARY KEY \
         \     , salt             BLOB   \
         \     , hashsaltpassword BLOB   \
@@ -204,20 +285,31 @@ createSqlTables c = do
 
     schemaCreateBoard :: Query
     schemaCreateBoard = 
-        " CREATE TABLE IF NOT EXISTS \
-        \   board                    \
-        \     ( name       TEXT      \
-        \     , position   INT       \
-        \     , columnName TEXT      \
-        \     , columnId   UUID      \
-        \     )                      "
+        " CREATE TABLE IF NOT EXISTS             \
+        \   board                                \
+        \     ( boardid   TEXT                   \
+        \     , boardname TEXT                   \
+        \     , PRIMARY KEY (boardid, boardname) \
+        \     )                                  "
+
+    schemaCreateColumn :: Query
+    schemaCreateColumn = 
+        " CREATE TABLE IF NOT EXISTS            \
+        \   column                              \
+        \     ( boardid     TEXT                \
+        \     , columnid    TEXT                \
+        \     , position    INT                 \
+        \     , columnname  TEXT                \
+        \     , PRIMARY KEY (boardid, columnid) \
+        \     )                                 "
 
     schemaCreateTicket :: Query
     schemaCreateTicket = 
-        " CREATE TABLE IF NOT EXISTS \
-        \   ticket                   \
-        \     ( columnId UUID        \
-        \     , id       UUID        \
-        \     , name     TEXT        \
-        \     , content  TEXT        \
-        \     )                      "
+        " CREATE TABLE IF NOT EXISTS       \
+        \   ticket                         \
+        \     ( columnid UUID              \
+        \     , id       UUID              \
+        \     , name     TEXT              \
+        \     , content  TEXT              \
+        \     , PRIMARY KEY (columnid, id) \
+        \     )                            "

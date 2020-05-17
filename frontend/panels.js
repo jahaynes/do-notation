@@ -65,6 +65,16 @@ function ticketSelect(event) {
         });
 }
 
+function getCurrentBoard() {
+    return document.getElementById('boards').activeBoardId;
+}
+
+function boardSelect(event) {
+    const boardId = event.target.id;
+    document.getElementById('boards').activeBoardId = boardId;
+    fetchBoard(boardId, showLoginUserPanel);
+}
+
 function clearLoginPanel() {
     //TODO
 }

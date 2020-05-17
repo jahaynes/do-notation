@@ -1,13 +1,15 @@
 module Storage.Sqlite.SqliteTypes where
 
 import Types.Board
+import Types.BoardId
 import Types.Column
 import Types.Ticket
 import Types.User
 
 import Data.Maybe             (fromJust)
 import Data.UUID              (fromText, toText)
-import Database.SQLite.Simple (FromRow (..), ToRow (..), field)
+import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField
 
 data UserRow =
     UserRow { ur_userid           :: !UserId
@@ -21,22 +23,16 @@ instance ToRow UserRow where
                  (HashedSaltedPassword hspw)) =
       toRow (uid, s, hspw)
 
-data BoardRow =
-    BoardRow BoardName ColumnPosition ColumnName ColumnId
-        deriving Eq
+data UserBoard = UserBoard UserId BoardId
 
-instance ToRow BoardRow where
-  toRow (BoardRow (BoardName name)
-                  (ColumnPosition pos)
-                  (ColumnName colName)
-                  (ColumnId colId)) =
-      toRow (name, pos, colName, toText colId)
+instance ToRow UserBoard where
+  toRow (UserBoard (UserId userid)
+                   (BoardId boardId)) =
+      toRow (userid, toText boardId)
 
-instance FromRow BoardRow where
-  fromRow = BoardRow <$> (BoardName                      <$> field)
-                     <*> (ColumnPosition                 <$> field)
-                     <*> (ColumnName                     <$> field)
-                     <*> (ColumnId . fromJust . fromText <$> field)
+instance FromRow UserBoard where
+  fromRow = UserBoard <$> (UserId                        <$> field)
+                      <*> (BoardId . fromJust . fromText <$> field)
 
 data TicketRow =
     TicketRow ColumnId TicketId TicketName TicketContent
@@ -54,3 +50,59 @@ instance FromRow TicketRow where
                       <*> (TicketId . fromJust . fromText <$> field)
                       <*> (TicketName                     <$> field)
                       <*> (TicketContent                  <$> field)
+
+newtype SqlColumnName =
+  SqlColumnName ColumnName
+
+instance ToField SqlColumnName where
+  toField (SqlColumnName (ColumnName name)) = toField name
+
+newtype SqlColumnPosition =
+  SqlColumnPosition ColumnPosition
+
+instance ToField SqlColumnPosition where
+  toField (SqlColumnPosition (ColumnPosition pos)) = toField pos
+
+newtype SqlColumnId =
+  SqlColumnId ColumnId
+
+instance ToField SqlColumnId where
+  toField (SqlColumnId (ColumnId cid)) = toField . toText $ cid
+
+newtype SqlUserId =
+  SqlUserId UserId
+
+instance ToRow SqlUserId where
+  toRow (SqlUserId (UserId uid)) =
+    toRow (Only uid)
+
+newtype SqlBoardName =
+  SqlBoardName BoardName
+
+instance ToField SqlBoardName where
+  toField (SqlBoardName (BoardName boardName)) = toField boardName
+
+instance FromRow SqlBoardName where
+  fromRow = SqlBoardName . BoardName <$> field
+
+newtype SqlBoardId =
+  SqlBoardId BoardId
+
+instance ToField SqlBoardId where
+  toField (SqlBoardId (BoardId boardId)) = toField . toText $ boardId
+
+instance FromRow SqlBoardId where
+  fromRow = SqlBoardId . BoardId . fromJust . fromText <$> field
+
+instance ToRow SqlBoardId where
+  toRow (SqlBoardId (BoardId bid)) =
+    toRow (Only (toText bid))
+
+data SqlColumnRow =
+  SqlColumnRow ColumnPosition ColumnName ColumnId
+    deriving (Eq, Ord)
+
+instance FromRow SqlColumnRow where
+  fromRow = SqlColumnRow <$> (ColumnPosition <$> field)
+                         <*> (ColumnName <$> field)
+                         <*> (ColumnId . fromJust . fromText <$> field)

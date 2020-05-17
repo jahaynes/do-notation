@@ -1,0 +1,6 @@
+
+.boards-container {
+    background-color: slateblue;
+    display: flex;
+    padding-bottom: 1em;
+}

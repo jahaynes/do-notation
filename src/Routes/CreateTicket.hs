@@ -6,7 +6,7 @@ module Routes.CreateTicket where
 
 import Errors
 import Storage.StorageApi
-import Types.Board
+import Types.BoardId
 import Types.Json
 import Types.Ticket
 
@@ -16,7 +16,7 @@ import Data.Aeson
 import GHC.Generics               (Generic)
 
 data CreateTicket =
-    CreateTicket { ct_board   :: !BoardName
+    CreateTicket { ct_boardId :: !BoardId
                  , ct_name    :: !TicketName
                  , ct_content :: !TicketContent
                  } deriving Generic
@@ -28,8 +28,8 @@ instance FromJSON CreateTicket where
 routeCreateTicket :: StorageApi
                   -> CreateTicket
                   -> ExceptT ErrorResponse IO TicketId
-routeCreateTicket storageApi (CreateTicket boardName name body) =
+routeCreateTicket storageApi (CreateTicket boardId name body) =
     catchAll "Could not create ticket." $
-        lift (getDefaultColumn storageApi boardName) >>= \case
+        lift (getDefaultColumn storageApi boardId) >>= \case
             Just defaultColumnId -> lift (createTicket storageApi defaultColumnId name body)
             Nothing              -> err 500 "No default column found."

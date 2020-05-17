@@ -3,30 +3,34 @@
 
 module Types.Board where
 
+import Types.BoardId
 import Types.Column
 import Types.Json
 
-import Control.DeepSeq            (NFData)
+import Control.DeepSeq (NFData)
 import Data.Aeson
-import Data.Text                  (Text)
-import Data.Vector                (Vector)
-import GHC.Generics               (Generic)
-import Servant                    (FromHttpApiData (..))
+import Data.Text       (Text)
+import Data.Vector     (Vector)
+import GHC.Generics    (Generic)
 
 newtype BoardName =
     BoardName { bi_value :: Text
-            } deriving (Eq, Generic)
+              } deriving (Eq, Generic, NFData)
+
+instance ToJSON BoardName where
+    toJSON = genericToJSON defaultOptions { fieldLabelModifier = chop
+                                          , unwrapUnaryRecords = True
+                                          }
 
 instance FromJSON BoardName where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True
                                                 }
 
-instance FromHttpApiData BoardName where
-    parseUrlPiece txt = BoardName <$> parseUrlPiece txt
-
-newtype Board =
-    Board { b_columns :: Vector Column
+data Board =
+    Board { b_id      :: !BoardId
+          , b_name    :: !BoardName
+          , b_columns :: !(Vector Column)
           } deriving (Generic, NFData)
 
 instance ToJSON Board where

@@ -8,6 +8,7 @@ module Security.Authorisation ( Authed
 import Errors
 import Security.AuthToken
 import Security.Security
+import Types.User
 
 import Control.Monad.Trans.Except
 import Data.Aeson                 (ToJSON (..))
@@ -33,7 +34,7 @@ instance FromHttpApiData CookieHeader where
 
 withAuthorisation :: Monad m => SecurityApi n
                              -> Maybe CookieHeader
-                             -> ExceptT ErrorResponse m a
+                             -> (UserId -> ExceptT ErrorResponse m a)
                              -> ExceptT ErrorResponse m (Authed a)
 withAuthorisation securityApi mCookieHeader handler = do
 
@@ -47,8 +48,12 @@ withAuthorisation securityApi mCookieHeader handler = do
                      Right r -> pure r
 
     if verify securityApi authToken
-        then Authed <$> handler
+        then do let userId = getUserFromToken authToken
+                Authed <$> handler userId
         else err 401 "Auth token rejected."
+
+getUserFromToken :: AuthToken -> UserId
+getUserFromToken _ = UserId "foo" --TODO
 
 getAuthTokenCookie :: CookieHeader -> Either ByteString AuthToken
 getAuthTokenCookie (CookieHeader cookieTxt) = do

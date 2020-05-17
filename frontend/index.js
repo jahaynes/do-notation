@@ -23,10 +23,10 @@ function columnHeaderDropTicket(event) {
 
 const addTicket =
   async () => {
-    const boardName  = getCurrentBoard();
+    const boardId    = getCurrentBoard();
     const strName    = document.getElementById('input-ticket-name').value;
     const strContent = document.getElementById('input-ticket-content').value;
-    await createTicket(boardName, strName, strContent);
+    await createTicket(boardId, strName, strContent);
     setVisible(panels.NONE);
   }
 
@@ -39,8 +39,8 @@ const updateTicket =
     const strContent = document.getElementById('input-ticket-content').value;
     await restUpdateTicket(columnId, ticketId, strName, strContent);
 
-    const boardName = getCurrentBoard();
-    fetchBoard(boardName);
+    const boardId = getCurrentBoard();
+    fetchBoard(boardId);
   }
 
 const cancelAddTicket =
@@ -53,11 +53,11 @@ const deleteTicket =
   async () => {
     const createTicketSection = document.getElementById('create-tickets');
     
-    const boardName = getCurrentBoard();
-    const columnId  = createTicketSection.columnId;
-    const ticketId  = createTicketSection.ticketId;
+    const boardId  = getCurrentBoard();
+    const columnId = createTicketSection.columnId;
+    const ticketId = createTicketSection.ticketId;
 
-    await restDeleteTicket(boardName, columnId, ticketId);
+    await restDeleteTicket(boardId, columnId, ticketId);
     clearTicketPanel();
     setVisible(panels.NONE);
   }
@@ -108,8 +108,8 @@ function showNewTicketPanel(event) {
 }
 
 function main() {
-  const boardName = getCurrentBoard();
-  fetchBoard(boardName, showLoginUserPanel);
+  const boardId = getCurrentBoard();
+  fetchBoardsForUser(); //TODO
 }
 
 main();

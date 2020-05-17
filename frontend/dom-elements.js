@@ -1,9 +1,3 @@
-function getCurrentBoard() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    return urlParams.get('board');
-}
-
 function columnHeaderAsElement(column) {
 
     ul = document.createElement('ul');
@@ -13,12 +7,12 @@ function columnHeaderAsElement(column) {
     li = document.createElement('li');
 
     h2 = document.createElement('h2');
-    h2.id = column.id;
+    h2.id = column.columnid;
     h2.addEventListener('dragover', columnHeaderAllowDrop);
     h2.addEventListener('drop', columnHeaderDropTicket);
 
     h2.classList.add('noselect');
-    h2.textContent = column.name; // TODO pretty name
+    h2.textContent = column.name;
 
     li.appendChild(h2);
     ul.appendChild(li);
@@ -44,10 +38,37 @@ function ticketAsElement(columnId, jsonTicket) {
     return li;
 }
 
-function buildColumnHeaders(board) {
+function buildColumnHeaders(columns) {
     const tickets = document.getElementById('tickets');
     tickets.textContent = '';
-    for (const columnNo in board) {
-        tickets.appendChild(columnHeaderAsElement(board[columnNo]));
+    for (const columnNo in columns) {
+        tickets.appendChild(columnHeaderAsElement(columns[columnNo]));
     }
+}
+
+function buildBoards(boardIdsAndNames) {
+
+    const boards = document.getElementById('boards');
+    boards.textContent = '';
+
+    for(const bian in boardIdsAndNames) {
+        const boardId = boardIdsAndNames[bian][0];
+        const boardName = boardIdsAndNames[bian][1];
+        boards.appendChild(boardAsElement(boardId, boardName));
+    }
+}
+
+function boardAsElement(boardId, boardName) {
+    li = document.createElement('li');
+    li.id = boardId;
+    li.addEventListener('click', boardSelect);
+
+    p = document.createElement('p');
+    p.classList.add('noselect');
+    p.classList.add('noclick');
+    p.textContent = boardName;
+
+    li.appendChild(p);
+
+    return li;
 }

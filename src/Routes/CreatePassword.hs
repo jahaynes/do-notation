@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Routes.CreateUser where
+module Routes.CreatePassword where
 
 import Security.Security
 import Storage.StorageApi
@@ -12,17 +12,17 @@ import Data.Aeson
 import GHC.Generics           (Generic)
 import Servant                (Handler)
 
-data CreateUser =
-    CreateUser { cu_username    :: !UserId
-               , cu_rawpassword :: !RawPassword
-               } deriving Generic
+data CreatePassword =
+    CreatePassword { cu_username    :: !UserId
+                   , cu_rawpassword :: !RawPassword
+                   } deriving Generic
 
-instance FromJSON CreateUser where
+instance FromJSON CreatePassword where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeCreateUser :: SecurityApi IO -> StorageApi -> CreateUser -> Handler ()
-routeCreateUser securityApi storageApi (CreateUser uname pw) =
+routeCreatePassword :: SecurityApi IO -> StorageApi -> CreatePassword -> Handler ()
+routeCreatePassword securityApi storageApi (CreatePassword uname pw) =
     liftIO $ do
         (salt, hspw) <- hashPassword securityApi pw
-        createUser storageApi uname salt hspw
+        createPassword storageApi uname salt hspw

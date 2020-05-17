@@ -6,7 +6,7 @@
 module Controller (runServer) where
 
 import Errors
-import Routes.CreateUser
+import Routes.CreatePassword
 import Routes.CreateTicket
 import Routes.DeleteTicket
 import Routes.QueryBoard
@@ -20,6 +20,7 @@ import Security.Authorisation
 import Security.Security
 import Storage.StorageApi
 import Types.Board
+import Types.BoardId
 import Types.Column
 import Types.Ticket
 
@@ -33,11 +34,14 @@ type DoAPI =
 
    :<|> "logout" :> Post '[JSON] (Headers '[Header "Set-Cookie" CookieHeader] ())
 
-   :<|> "user" :> ReqBody '[JSON] CreateUser
+   :<|> "user" :> ReqBody '[JSON] CreatePassword
                :> Post '[JSON] ()
 
+   :<|> "boards" :> Header "Cookie" CookieHeader
+                 :> Get '[JSON] (Authed [(BoardId, BoardName)])
+
    :<|> "board" :> Header "Cookie" CookieHeader
-                :> QueryParam "board" BoardName
+                :> QueryParam "board" BoardId
                 :> Get '[JSON] (Authed Board)
 
    :<|> "column" :> Header "Cookie" CookieHeader
@@ -77,41 +81,47 @@ server securityApi storageApi =
     :<|> pure (addHeader routeLogout ())
 
          -- TODO rename routeSignup ?
-    :<|> routeCreateUser securityApi storageApi
+    :<|> routeCreatePassword securityApi storageApi
+
+        -- TODO split into withAuthentication & withAuthorisation ?
+    :<|> (\mCookie -> handle
+                    $ withAuthorisation securityApi mCookie
+                    $ routeQueryBoards storageApi
+                    )
 
     :<|> (\mCookie mBoard -> handle
                            $ withAuthorisation securityApi mCookie
-                           $ routeQueryBoard storageApi mBoard
+                           $ \_ -> routeQueryBoard storageApi mBoard
                            )
 
     :<|> (\mCookie mUUID -> handle
                           $ withAuthorisation securityApi mCookie
-                          $ routeQueryColumn storageApi mUUID
+                          $ \_ -> routeQueryColumn storageApi mUUID
                           )
 
     :<|> (\mCookie mColumnId mTicketId -> handle
                                         $ withAuthorisation securityApi mCookie
-                                        $ routeQueryTicket storageApi mColumnId mTicketId
+                                        $ \_ -> routeQueryTicket storageApi mColumnId mTicketId
                                         )
 
     :<|> (\mCookie createTicketReq -> handle
                                     $ withAuthorisation securityApi mCookie
-                                    $ routeCreateTicket storageApi createTicketReq
+                                    $ \_ -> routeCreateTicket storageApi createTicketReq
                                     )
 
     :<|> (\mCookie updateTicketReq -> handle
                                     $ withAuthorisation securityApi mCookie
-                                    $ routeUpdateTicket storageApi updateTicketReq
+                                    $ \_ -> routeUpdateTicket storageApi updateTicketReq
                                     )
 
     :<|> (\mCookie deleteTicketReq -> handle
                                     $ withAuthorisation securityApi mCookie
-                                    $ routeDeleteTicket storageApi deleteTicketReq
+                                    $ \_ -> routeDeleteTicket storageApi deleteTicketReq
                                     )
 
     :<|> (\mCookie moveTicketReq -> handle
                                   $ withAuthorisation securityApi mCookie
-                                  $ routeMoveTicket storageApi moveTicketReq
+                                  $ \_ -> routeMoveTicket storageApi moveTicketReq
                                   )
 
     :<|> serveDirectoryWebApp "frontend"
