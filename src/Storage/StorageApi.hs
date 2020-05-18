@@ -1,5 +1,6 @@
 module Storage.StorageApi where
 
+import Errors
 import Types.Board
 import Types.BoardId
 import Types.Column
@@ -7,7 +8,7 @@ import Types.Ticket
 import Types.User
 
 data StorageApi = StorageApi
-                { createPassword     :: UserId -> Salt -> HashedSaltedPassword -> IO ()
+                { createPassword     :: UserId -> Salt -> HashedSaltedPassword -> IO (Either ErrorResponse ())
                 , getSaltAndPassword :: UserId -> IO (Maybe (Salt, HashedSaltedPassword))
 
                 , createUser         :: UserId -> BoardId -> IO ()

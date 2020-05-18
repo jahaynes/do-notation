@@ -32,6 +32,7 @@
 #create-user-commands {
     display: flex;
     margin-top: 1em;
+    width: 15.5rem;
 }
 
 #create-user-commands input {

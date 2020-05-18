@@ -31,6 +31,7 @@
 
 #login-commands {
     display: flex;
+    width: 15.5rem;
     margin-top: 1em;
 }
 
@@ -41,4 +42,22 @@
 #login-commands input:first-of-type {
     margin-left: 0;
 }
-  
+
+#login-error-section {
+    background-color: beige;
+    width: 15rem;
+    padding: 0;
+    transition: all 0.3s;
+}
+
+#login-error-section.active {
+    padding: 0.25em;
+    margin: 1em 0 0 0;
+    height: auto;
+}
+
+#login-error-message {
+    background-color: beige;
+    padding: 0;
+    margin: 0;
+}

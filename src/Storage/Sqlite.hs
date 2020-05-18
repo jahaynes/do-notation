@@ -3,6 +3,7 @@
 
 module Storage.Sqlite where
 
+import Errors
 import Storage.Sqlite.SqliteTypes
 import Storage.StorageApi
 import Types.Board
@@ -11,6 +12,7 @@ import Types.Column
 import Types.Ticket
 import Types.User
 
+import           Control.Exception.Safe           (catch)
 import           Data.List                   as L (sort)
 import           Data.Maybe                       (catMaybes, fromJust)
 import           Data.Text                        (Text)
@@ -21,6 +23,7 @@ import           Data.Vector.Algorithms.Heap as V (sort)
 import qualified Data.Vector                 as V
 import           Database.SQLite.Simple
 import           Safe                             (headMay)
+
 createSqlite :: FilePath -> IO StorageApi
 createSqlite filename = do
     c <- open filename
@@ -41,15 +44,18 @@ createSqlite filename = do
                       , moveTicket         = moveTicketImpl c
                       }
 
-createPasswordImpl :: Connection -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createPasswordImpl :: Connection -> UserId -> Salt -> HashedSaltedPassword -> IO (Either ErrorResponse ())
 createPasswordImpl c userId salt hashedSaltedPassword =
-    execute c sqlCreatePassword (UserRow userId salt hashedSaltedPassword)
+    catch (Right <$> execute c sqlCreatePassword (UserRow userId salt hashedSaltedPassword))
+           errorHandler
     where
     sqlCreatePassword :: Query
     sqlCreatePassword =
         " INSERT INTO password                    \
         \ (userId, salt, hashsaltpassword) VALUES \
         \ (     ?,    ?,                ?)        "
+
+    errorHandler e | sqlError e == ErrorConstraint = err' 409 "Could not create user.  User already taken?"
 
 getSaltAndPasswordImpl :: Connection -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
 getSaltAndPasswordImpl c (UserId userId) =

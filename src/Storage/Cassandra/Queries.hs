@@ -3,6 +3,7 @@
 
 module Storage.Cassandra.Queries where
 
+import Errors
 import Storage.Cassandra.Common (params)
 import Storage.StorageApi
 import Types.Board
@@ -47,9 +48,10 @@ createApi c =
 blob :: ByteString -> Blob
 blob = Blob . LBS.fromStrict
 
-createPasswordImpl :: ClientState -> UserId -> Salt -> HashedSaltedPassword -> IO ()
+createPasswordImpl :: ClientState -> UserId -> Salt -> HashedSaltedPassword -> IO (Either ErrorResponse ())
 createPasswordImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
-    runClient c $ write cqlCreatePassword (params (userId, blob salt, blob hspw))
+    -- TODO find and catch errors here, instead of always Right
+    runClient c $ Right <$> write cqlCreatePassword (params (userId, blob salt, blob hspw))
     where
     cqlCreatePassword :: PrepQuery W (Text, Blob, Blob) ()
     cqlCreatePassword =

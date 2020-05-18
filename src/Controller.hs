@@ -81,7 +81,9 @@ server securityApi storageApi =
     :<|> pure (addHeader routeLogout ())
 
          -- TODO rename routeSignup ?
-    :<|> routeCreatePassword securityApi storageApi
+    :<|> (\createPw -> handle
+                     $ routeCreatePassword securityApi storageApi createPw
+                     )
 
         -- TODO split into withAuthentication & withAuthorisation ?
     :<|> (\mCookie -> handle

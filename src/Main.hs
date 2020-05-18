@@ -50,8 +50,8 @@ sampleData storageApi = do
     _   <- createUser storageApi (UserId "foo") b1
     _   <- createUser storageApi (UserId "foo") b2
 
-    ci1 <- createColumn storageApi b1 (ColumnPosition 1) (ColumnName "Wish List")
-    ci2 <- createColumn storageApi b1 (ColumnPosition 2) (ColumnName "In Progress")
+    ci1 <- createColumn storageApi b1 (ColumnPosition 1) (ColumnName "Wish list")
+    ci2 <- createColumn storageApi b1 (ColumnPosition 2) (ColumnName "In progress")
     ci3 <- createColumn storageApi b1 (ColumnPosition 3) (ColumnName "Done")
 
     _ <- createTicket storageApi ci2 (TicketName "ticket name 1") (TicketContent "ticket content 1")

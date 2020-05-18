@@ -1,6 +1,31 @@
 
-.boards-container {
+#boards {
     background-color: slateblue;
     display: flex;
-    padding-bottom: 1em;
 }
+
+#boards ul {
+    padding: 0;
+    list-style-type: none;
+}
+
+#boards li {
+    margin-right: 1em;
+    display: inline-block;
+}
+
+#boards button {
+    background-color: beige;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 0.4em solid beige;
+    border-radius: 0.2em;
+    position: relative;
+}
+  
+#boards button:hover, #boards button:focus {
+    background-color: blueviolet;
+    border-color: blueviolet;
+    color: burlywood;
+}
+

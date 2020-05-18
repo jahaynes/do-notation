@@ -40,12 +40,15 @@
     </form>
   </section>
 
-  <section id="login" class="login container">
+  <section id='login' class='login container'>
     <form>
       <label for='input-login-user-name' class='lblfield'>login username</label>
       <input  id='input-login-user-name' autocapitalize="false"/>
       <label for='input-login-user-password' class='lblfield'>login password</label>
       <input  id='input-login-user-password' type='password'/>
+      <section id='login-error-section'>
+        <p id='login-error-message'></p>
+      </section>
       <div id='login-commands'>
         <input type=button value='Login'  onclick='loginUser(event)'       class='lblbtn'/>
         <input type=button value='Cancel' onclick='cancelLoginUser(event)' class='lblbtn'/>

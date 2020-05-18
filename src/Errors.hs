@@ -5,6 +5,7 @@ module Errors ( ErrorResponse
               , catchAll
               , handle
               , err
+              , err'
               ) where
 
 import Control.DeepSeq                  (NFData)
@@ -19,6 +20,9 @@ data ErrorResponse =
 
 err :: Monad m => Int -> ByteString -> ExceptT ErrorResponse m a
 err code msg = throwE $ ErrorResponse code msg
+
+err' :: Applicative m => Int -> ByteString -> m (Either ErrorResponse a)
+err' code msg = pure . Left $ ErrorResponse code msg
 
 catchAll :: (MonadCatch m, MonadIO m, NFData a)
          => ByteString

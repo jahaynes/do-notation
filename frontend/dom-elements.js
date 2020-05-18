@@ -51,24 +51,25 @@ function buildBoards(boardIdsAndNames) {
     const boards = document.getElementById('boards');
     boards.textContent = '';
 
+    const ul = document.createElement('ul');   
+
     for(const bian in boardIdsAndNames) {
         const boardId = boardIdsAndNames[bian][0];
         const boardName = boardIdsAndNames[bian][1];
-        boards.appendChild(boardAsElement(boardId, boardName));
+        ul.appendChild(boardAsElement(boardId, boardName));
     }
+
+    boards.appendChild(ul);
 }
 
 function boardAsElement(boardId, boardName) {
     li = document.createElement('li');
-    li.id = boardId;
-    li.addEventListener('click', boardSelect);
+    
+    const button = document.createElement('button');
+    button.id = boardId;
+    button.addEventListener('click', boardSelect);
+    button.textContent = boardName;
 
-    p = document.createElement('p');
-    p.classList.add('noselect');
-    p.classList.add('noclick');
-    p.textContent = boardName;
-
-    li.appendChild(p);
-
+    li.appendChild(button);
     return li;
 }
