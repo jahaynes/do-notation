@@ -41,7 +41,7 @@ routeLogin' securityApi storageApi (Login uname pw) = do
         Just (salt, storedPw) ->
             let checkedPw = hashPasswordWithSalt securityApi salt pw
             in if checkedPw == storedPw
-                   then let (AuthToken authToken) = signAndEncode securityApi mempty
+                   then let (AuthToken authToken) = signAndEncode securityApi uname
                             cookie = CookieHeader
                                    . decodeUtf8
                                    . toStrict

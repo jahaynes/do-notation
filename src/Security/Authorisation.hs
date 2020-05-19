@@ -47,13 +47,9 @@ withAuthorisation securityApi mCookieHeader handler = do
                                in err 400 msg
                      Right r -> pure r
 
-    if verify securityApi authToken
-        then do let userId = getUserFromToken authToken
-                Authed <$> handler userId
-        else err 401 "Auth token rejected."
-
-getUserFromToken :: AuthToken -> UserId
-getUserFromToken _ = UserId "foo" --TODO
+    case authenticateJwt securityApi authToken of
+        Nothing     -> err 401 "Auth token rejected."
+        Just userId -> Authed <$> handler userId
 
 getAuthTokenCookie :: CookieHeader -> Either ByteString AuthToken
 getAuthTokenCookie (CookieHeader cookieTxt) = do

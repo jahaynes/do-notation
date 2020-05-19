@@ -7,21 +7,21 @@ import Security.AuthToken
 import Types.User ( HashedSaltedPassword (..)
                   , RawPassword (..)
                   , Salt (..)
+                  , UserId (..)
                   )
 
 import Data.ByteArray     (convert)
-import Data.Maybe         (isJust)
 import Data.Text          (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Crypto.Hash         
 import Crypto.Random      (MonadRandom, getRandomBytes)
 
-import           Web.JWT      (JWTClaimsSet, Signer)
+import           Web.JWT      (Signer)
 import qualified Web.JWT as J
 
 data SecurityApi m =
-    SecurityApi { signAndEncode        :: JWTClaimsSet -> AuthToken
-                , verify               :: AuthToken -> Bool
+    SecurityApi { signAndEncode        :: UserId -> AuthToken
+                , authenticateJwt      :: AuthToken -> Maybe UserId
                 , hashPassword         :: RawPassword -> m (Salt, HashedSaltedPassword)
                 , hashPasswordWithSalt :: Salt -> RawPassword -> HashedSaltedPassword
                 }
@@ -32,16 +32,23 @@ createSecurityApi !jwtSecret = do
     let signer = J.hmacSecret jwtSecret
 
     pure $ SecurityApi
-               { signAndEncode        = AuthToken <$> J.encodeSigned signer mempty
-               , verify               = verifyImpl signer
+               { signAndEncode        = signAndEncodeImpl signer
+               , authenticateJwt      = verifyImpl signer
                , hashPassword         = hashPasswordImpl
                , hashPasswordWithSalt = hashPasswordWithSaltImpl
                }
 
+signAndEncodeImpl :: Signer -> UserId -> AuthToken
+signAndEncodeImpl signer (UserId userid) =    
+    AuthToken . J.encodeSigned signer mempty
+              $ mempty { J.sub = J.stringOrURI userid }
+
 --TODO check for some property other than just 'signed'
-verifyImpl :: Signer -> AuthToken -> Bool
-verifyImpl signer (AuthToken t) =
-    isJust (J.decodeAndVerifySignature signer t) 
+verifyImpl :: Signer -> AuthToken -> Maybe UserId
+verifyImpl signer (AuthToken t) = do
+    token <- J.decodeAndVerifySignature signer t
+    uid   <- J.sub . J.claims $ token
+    pure . UserId $ J.stringOrURIToText uid
 
 hashPasswordImpl :: MonadRandom m => RawPassword -> m (Salt, HashedSaltedPassword)
 hashPasswordImpl pword = do
