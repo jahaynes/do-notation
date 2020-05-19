@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns,
+             OverloadedStrings #-}
 
 module Security.Security where
 
@@ -10,6 +11,7 @@ import Types.User ( HashedSaltedPassword (..)
 
 import Data.ByteArray     (convert)
 import Data.Maybe         (isJust)
+import Data.Text          (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Crypto.Hash         
 import Crypto.Random      (MonadRandom, getRandomBytes)
@@ -24,10 +26,10 @@ data SecurityApi m =
                 , hashPasswordWithSalt :: Salt -> RawPassword -> HashedSaltedPassword
                 }
 
-createSecurityApi :: MonadRandom m => m (SecurityApi m)
-createSecurityApi = do
+createSecurityApi :: MonadRandom m => Text -> m (SecurityApi m)
+createSecurityApi !jwtSecret = do
 
-    let signer = J.hmacSecret "I'm a secret!"
+    let signer = J.hmacSecret jwtSecret
 
     pure $ SecurityApi
                { signAndEncode        = AuthToken <$> J.encodeSigned signer mempty

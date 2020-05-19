@@ -22,9 +22,12 @@ import System.Environment (getArgs, lookupEnv)
 data Implementation = Cassandra
                     | Sqlite
 
-getApi :: Implementation -> IO StorageApi
-getApi Sqlite = createSqlite "data/do-notation.db"
-getApi Cassandra = do
+getSecurityApi :: IO (SecurityApi IO)
+getSecurityApi = parseEnv "JWT_SECRET" >>= createSecurityApi  
+
+getStorageApi :: Implementation -> IO StorageApi
+getStorageApi Sqlite = createSqlite "data/do-notation.db"
+getStorageApi Cassandra = do
     cassandraPort  <- parseEnv "CASS_PORT"
     cassandraHosts <- parseEnv "CASS_HOSTS"
     create cassandraPort cassandraHosts >>= \c -> do
@@ -35,8 +38,8 @@ getApi Cassandra = do
 main :: IO ()
 main = do
 
-    securityApi <- createSecurityApi
-    storageApi <- getApi Sqlite
+    securityApi <- getSecurityApi
+    storageApi <- getStorageApi Sqlite
     args <- getArgs
     when (args == ["--sample-data"]) $ do
         putStrLn "Generating sample data"
