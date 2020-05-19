@@ -83,6 +83,7 @@ const loginUser =
 
       case 200:
         setVisible(panels.NONE);
+        location = location;
         break;
     }
   }
@@ -95,6 +96,7 @@ function showLoginUserPanel(event) {
 const doLogout =
   async () => {
     await logout();
+    location = location;
   }
 
 function showNewUserPanel(event) {
@@ -108,8 +110,7 @@ function showNewTicketPanel(event) {
 }
 
 function main() {
-  const boardId = getCurrentBoard();
-  fetchBoardsForUser(); //TODO
+  fetchBoardsForUser();
 }
 
 main();
