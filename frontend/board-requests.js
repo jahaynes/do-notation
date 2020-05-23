@@ -99,6 +99,30 @@ const fetchBoard =
         }
     }
 
+const restCreateBoard = 
+    async (boardName) => {
+        const response =
+            await fetch('/board', {
+                method: 'POST',
+                body: '"' + boardName + '"',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+        switch(response.status) {
+
+            case 401:
+                //TODO
+                console.log("auth error");
+                break;
+
+            case 200:
+                const boardId = await response.json();
+                fetchBoardsForUser();
+        }
+    }
+
 const fetchColumns =
     async (columns, authFailHandler) => {
 

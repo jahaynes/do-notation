@@ -6,6 +6,7 @@
 module Controller (runServer) where
 
 import Errors
+import Routes.CreateBoard
 import Routes.CreatePassword
 import Routes.CreateTicket
 import Routes.DeleteTicket
@@ -43,6 +44,10 @@ type DoAPI =
    :<|> "board" :> Header "Cookie" CookieHeader
                 :> QueryParam "board" BoardId
                 :> Get '[JSON] (Authed Board)
+
+   :<|> "board" :> Header "Cookie" CookieHeader
+                :> ReqBody '[JSON] CreateBoard
+                :> Post '[JSON] (Authed BoardId)
 
    :<|> "column" :> Header "Cookie" CookieHeader
                  :> QueryParam "columnId" ColumnId
@@ -95,6 +100,11 @@ server securityApi storageApi =
                            $ withAuthorisation securityApi mCookie
                            $ \_ -> routeQueryBoard storageApi mBoard
                            )
+
+    :<|> (\mCookie createBoardReq -> handle
+                                   $ withAuthorisation securityApi mCookie
+                                   $ routeCreateBoard storageApi createBoardReq
+                                   )
 
     :<|> (\mCookie mUUID -> handle
                           $ withAuthorisation securityApi mCookie

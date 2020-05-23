@@ -53,6 +53,8 @@ function buildBoards(boardIdsAndNames) {
 
     const ul = document.createElement('ul');   
 
+    ul.appendChild(newBoardAsElement());
+
     for(const bian in boardIdsAndNames) {
         const boardId = boardIdsAndNames[bian][0];
         const boardName = boardIdsAndNames[bian][1];
@@ -62,14 +64,47 @@ function buildBoards(boardIdsAndNames) {
     boards.appendChild(ul);
 }
 
+// TODO check matching adds and removes
+function newBoardAsElement() {
+    li = document.createElement('li');   
+    const button = document.createElement('button');
+    button.id = "btnNewBoard";
+    button.addEventListener('click', buttonNewBoardClick);
+    button.textContent = "+ new +";
+    button.focus();
+    li.appendChild(button);
+    return li;
+}
+
+function buttonNewBoardClick() {
+    const button = document.getElementById('btnNewBoard');
+    input = document.createElement('input');
+    input.id = 'newBoardInput';
+    input.addEventListener('blur', newBoardInputBlur);
+    button.appendChild(input);
+    button.disabled = true;
+    input.focus();
+}
+
+function newBoardInputBlur() {
+    const input = document.getElementById('newBoardInput');
+    const boardId = input.value;
+
+    input.removeEventListener('blur', newBoardInputBlur);
+    const button = document.getElementById('btnNewBoard');
+    button.removeChild(input);
+    button.disabled = false;
+
+    // TODO DI
+    restCreateBoard(boardId);
+}
+
 function boardAsElement(boardId, boardName) {
     li = document.createElement('li');
-    
     const button = document.createElement('button');
     button.id = boardId;
     button.addEventListener('click', boardSelect);
     button.textContent = boardName;
-
     li.appendChild(button);
     return li;
 }

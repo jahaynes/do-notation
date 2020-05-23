@@ -13,6 +13,7 @@ executable do-notation
   ghc-options:         -Wall -O3
   other-modules:       Controller,
                        Errors,
+                       Routes.CreateBoard,
                        Routes.CreatePassword,
                        Routes.CreateTicket,
                        Routes.DeleteTicket,
