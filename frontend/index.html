@@ -3,18 +3,18 @@
 
 <head>
   <meta charset="utf-8" />
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <link rel="stylesheet" type="text/css" href="boards.css">
-  <link rel="stylesheet" type="text/css" href="tickets.css">
-  <link rel="stylesheet" type="text/css" href="login.css">
-  <link rel="stylesheet" type="text/css" href="create-user.css">
-  <link rel="stylesheet" type="text/css" href="create-tickets.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/boards.css">
+  <link rel="stylesheet" type="text/css" href="css/tickets.css">
+  <link rel="stylesheet" type="text/css" href="css/login.css">
+  <link rel="stylesheet" type="text/css" href="css/create-user.css">
+  <link rel="stylesheet" type="text/css" href="css/create-tickets.css">
 </head>
 <body>
 
   <section id="controls" class="controls-container container">
     <input type=button value='Login'         onclick='showLoginUserPanel(event)' class='lblbtn'/>
-    <input type=button value='Logout'        onclick='doLogout(event)'           class='lblbtn'/>
+    <input type=button value='Logout'        onclick='logout(event)'             class='lblbtn'/>
     <input type=button value='Create User'   onclick='showNewUserPanel(event)'   class='lblbtn'/>
     <input type=button value='Create Ticket' onclick='showNewTicketPanel(event)' class='lblbtn'/>
   </section>
@@ -69,10 +69,9 @@
     </form>
   </section>
 
-<script type="text/javascript" src="dom-elements.js"></script>
-<script type="text/javascript" src="user-requests.js"></script>
-<script type="text/javascript" src="board-requests.js"></script>
-<script type="text/javascript" src="panels.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="js/page-elements.js"></script>
+<script type="text/javascript" src="js/rest-requests.js"></script>
+<script type="text/javascript" src="js/panels.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
 </body>
 </html>

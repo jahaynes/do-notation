@@ -7,26 +7,12 @@ function ticketOnDragStart(event) {
     event.dataTransfer.setData('from', from);
 }
 
-function columnHeaderAllowDrop(event) {
-    event.preventDefault();
-}
-
-function columnHeaderDropTicket(event) {
-    event.preventDefault();
-    const fromId   = event.dataTransfer.getData('from')
-    const toId     = event.target.id;  
-    const ticketId = event.dataTransfer.getData('ticket')
-    clearTicketPanel();
-    setVisible(panels.NONE);
-    moveTicket(getCurrentBoard(), fromId, toId, ticketId);
-}
-
 const addTicket =
   async () => {
     const boardId    = getCurrentBoard();
     const strName    = document.getElementById('input-ticket-name').value;
     const strContent = document.getElementById('input-ticket-content').value;
-    await createTicket(boardId, strName, strContent);
+    await restApi.createTicket(boardId, strName, strContent);
     setVisible(panels.NONE);
   }
 
@@ -37,10 +23,11 @@ const updateTicket =
     const ticketId   = createTicketSection.ticketId;
     const strName    = document.getElementById('input-ticket-name').value;
     const strContent = document.getElementById('input-ticket-content').value;
-    await restUpdateTicket(columnId, ticketId, strName, strContent);
+    await restApi.updateTicket(columnId, ticketId, strName, strContent);
 
-    const boardId = getCurrentBoard();
-    fetchBoard(boardId);
+    // TODO refresh action
+    //const boardId = getCurrentBoard();
+    //restApi.getBoard(boardId);
   }
 
 const cancelAddTicket =
@@ -57,7 +44,7 @@ const deleteTicket =
     const columnId = createTicketSection.columnId;
     const ticketId = createTicketSection.ticketId;
 
-    await restDeleteTicket(boardId, columnId, ticketId);
+    await restApi.deleteTicket(boardId, columnId, ticketId);
     clearTicketPanel();
     setVisible(panels.NONE);
   }
@@ -66,26 +53,39 @@ const addUser =
   async () => {
     const strName     = document.getElementById('input-user-name').value;
     const strPassword = document.getElementById('input-user-password').value;
-    await createUser(strName, strPassword);
+    await restApi.createUser(strName, strPassword);
     setVisible(panels.NONE);
   }
 
 const loginUser =
   async () => {
+
     const strName     = document.getElementById('input-login-user-name').value;
     const strPassword = document.getElementById('input-login-user-password').value;
-    const response    = await login(strName, strPassword);
+    const errSection  = document.getElementById('login-error-section');
+    const errMsg      = document.getElementById('login-error-message');
 
-    switch(response.status) {
-
-      case 401:
-        break;
-
-      case 200:
-        setVisible(panels.NONE);
-        location = location;
-        break;
+    function clearLoginError() {
+      errMsg.innerText = '';
+      errSection.classList.remove('active');     
     }
+
+    function setLoginError(errTxt) {
+      errMsg.innerText = errTxt;
+      errSection.classList.add('active');     
+    }
+
+    function loginSuccess() {
+      setVisible(panels.NONE);
+      clearLoginError();
+      location = location;
+    }
+
+    restApi.login(strName,
+                  strPassword,
+                  clearLoginError,
+                  loginSuccess,
+                  setLoginError);
   }
 
 function showLoginUserPanel(event) {
@@ -93,9 +93,9 @@ function showLoginUserPanel(event) {
   setVisible(panels.LOGIN);
 }
 
-const doLogout =
+const logout =
   async () => {
-    await logout();
+    await restApi.logout();
     location = location;
   }
 
@@ -109,8 +109,19 @@ function showNewTicketPanel(event) {
   setVisible(panels.CREATE_TICKET);
 }
 
-function main() {
-  fetchBoardsForUser();
+function getBoards() {
+  restApi.withBoards(buildBoards(restApi));
 }
+
+function unauthHandler() {
+  console.log("Not logged in.");
+  setVisible(panels.LOGIN);
+}
+
+function main() {
+  getBoards();
+}
+
+const restApi = createRestApi(unauthHandler);
 
 main();

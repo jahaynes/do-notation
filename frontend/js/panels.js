@@ -54,7 +54,7 @@ function ticketSelect(event) {
     const ticketElement = document.getElementById(ticketId);
     const columnId      = ticketElement.columnId;
 
-    fetchTicket(columnId, ticketId,
+    restApi.withTicket(columnId, ticketId,
         function(ticket) {
             document.getElementById('input-ticket-name').value = ticket.name;
             document.getElementById('input-ticket-content').value = ticket.content;
@@ -67,12 +67,6 @@ function ticketSelect(event) {
 
 function getCurrentBoard() {
     return document.getElementById('boards').activeBoardId;
-}
-
-function boardSelect(event) {
-    const boardId = event.target.id;
-    document.getElementById('boards').activeBoardId = boardId;
-    fetchBoard(boardId, showLoginUserPanel);
 }
 
 function clearLoginPanel() {
