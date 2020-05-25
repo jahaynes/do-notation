@@ -134,12 +134,15 @@ function buildColumnHeaders(restApi) {
 
     const columnHeaderAsElementImpl = columnHeaderAsElement(restApi);
 
+    const deleteBoardButtonImpl = deleteBoardButton(restApi);
+
     return async(columns) => {
         const tickets = document.getElementById('tickets');
         tickets.textContent = '';
         for (const columnNo in columns) {
             tickets.appendChild(await columnHeaderAsElementImpl(columns[columnNo]));
         }
+        tickets.appendChild(await deleteBoardButtonImpl());
     };
 }
 
@@ -159,6 +162,7 @@ function columnHeaderAsElement(restApi) {
         h2.addEventListener('dragover', columnHeaderAllowDrop);
         h2.addEventListener('drop', columnHeaderDropTicketImpl);
         h2.classList.add('noselect');
+        h2.classList.add('ticket-header');
         h2.textContent = column.name;
 
         li.appendChild(h2);
@@ -181,4 +185,37 @@ function columnHeaderDropTicket(restApi) {
         setVisible(panels.NONE);
         restApi.moveTicket(getCurrentBoard(), fromId, toId, ticketId);
     };
+}
+
+function deleteBoardButton(restApi) {
+
+    const deleteCurrentBoardImpl = deleteCurrentBoard(restApi);
+
+    return async() => {
+
+        const ul = document.createElement('ul');
+        ul.classList.add('ticket-column');
+
+        const li = document.createElement('li');
+
+        const button = document.createElement('button');
+        button.id = 'btnDeleteCurrentBoard';
+        button.textContent = 'x Delete Board x';
+        button.classList.add('ticket-header');
+        button.classList.add('ticket-header-delete');
+        button.addEventListener('click', deleteCurrentBoardImpl);
+
+        li.appendChild(button);
+        ul.appendChild(li);
+        return ul;
+    };
+}
+
+function deleteCurrentBoard(restApi) {
+
+    return async() => {
+        const boardId = getCurrentBoard();
+        console.log(boardId);
+        restApi.deleteBoard(boardId);
+    }
 }

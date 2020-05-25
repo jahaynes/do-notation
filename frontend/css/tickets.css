@@ -30,3 +30,19 @@
     margin: 1em 1em;
     word-wrap: break-word;
 }
+
+.ticket-header {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    background-color: lightcyan;
+    border: 0.4em solid lightcyan;
+    border-radius: 0.2em;
+    color: midnightblue;
+    white-space: nowrap;
+}
+
+.ticket-header-delete:focus, .ticket-header-delete:hover {
+    background-color: red;
+    border: 0.4em solid red;
+}

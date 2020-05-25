@@ -9,6 +9,7 @@ import Errors
 import Routes.CreateBoard
 import Routes.CreatePassword
 import Routes.CreateTicket
+import Routes.DeleteBoard
 import Routes.DeleteTicket
 import Routes.QueryBoard
 import Routes.Login
@@ -48,6 +49,10 @@ type DoAPI =
    :<|> "board" :> Header "Cookie" CookieHeader
                 :> ReqBody '[JSON] CreateBoard
                 :> Post '[JSON] (Authed BoardId)
+
+   :<|> "board" :> Header "Cookie" CookieHeader
+                :> ReqBody '[JSON] DeleteBoard
+                :> Delete '[JSON] (Authed ())
 
    :<|> "column" :> Header "Cookie" CookieHeader
                  :> QueryParam "columnId" ColumnId
@@ -105,6 +110,10 @@ server securityApi storageApi =
                                    $ withAuthorisation securityApi mCookie
                                    $ routeCreateBoard storageApi createBoardReq
                                    )
+
+    :<|> (\mCookie deleteBoardReq -> handle
+                                   $ withAuthorisation securityApi mCookie
+                                   $ \_ -> routeDeleteBoard storageApi deleteBoardReq)
 
     :<|> (\mCookie mUUID -> handle
                           $ withAuthorisation securityApi mCookie

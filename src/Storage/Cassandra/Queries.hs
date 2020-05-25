@@ -33,6 +33,7 @@ createApi c =
                , getSaltAndPassword = getSaltAndPasswordImpl c
                , createUser         = createUserImpl c
                , createBoard        = createBoardImpl c
+               , deleteBoard        = deleteBoardImpl c
                , createColumn       = createColumnImpl c
                , getBoard           = getBoardImpl c
                , getBoards          = getBoardsImpl c
@@ -146,6 +147,20 @@ createBoardImpl c (BoardName name) = do
         \ (boardid, boardname) VALUES   \
         \ (      ?,         ?)          "
 
+deleteBoardImpl :: ClientState -> BoardId -> IO ()
+deleteBoardImpl c (BoardId boardId) = runClient c $ do
+    write cqlDeleteUserBoard (params (Identity boardId))
+    write cqlDeleteBoard     (params (Identity boardId))
+    where
+    cqlDeleteUserBoard :: PrepQuery W (Identity UUID) ()
+    cqlDeleteUserBoard =
+        " DELETE FROM do_notation.column \
+        \ WHERE boardid = ?              "
+
+    cqlDeleteBoard :: PrepQuery W (Identity UUID) ()
+    cqlDeleteBoard =
+        " DELETE FROM do_notation.board \
+        \ WHERE boardid = ?             "
 
 getDefaultColumnImpl :: ClientState -> BoardId -> IO (Maybe ColumnId)
 getDefaultColumnImpl c (BoardId boardId) = runClient c $

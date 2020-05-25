@@ -6,6 +6,7 @@ function createRestApi(unauthHandler) {
            , "withBoards"   : restWithBoards(unauthHandler)
            , "withBoard"    : restWithBoard(unauthHandler)
            , "createBoard"  : restCreateBoard
+           , "deleteBoard"  : restDeleteBoard
            , "getColumns"   : restGetColumns
            , "withTicket"   : restWithTicket
            , "createTicket" : restCreateTicket
@@ -141,6 +142,39 @@ const restCreateBoard =
 
             case 200:
                 const boardId = await response.json();
+                // restGetBoards();    //TODO pull out refresh action
+        }
+    }
+
+const restDeleteBoard = 
+    async (boardId) => {
+        const response =
+            await fetch('/board', {
+                method: 'DELETE',
+                body: '"' + boardId + '"',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+        switch(response.status) {
+
+            case 401:
+                //TODO
+                console.log("auth error");
+                break;
+
+            case 403:
+                console.log("Couldn't delete - not empty");
+                break;
+
+            case 404:
+                console.log("board not found");
+                break;
+
+            case 200:
+                console.log("deleted");
+                //const boardId = await response.json();
                 // restGetBoards();    //TODO pull out refresh action
         }
     }

@@ -32,6 +32,7 @@ createSqlite filename = do
                       , getSaltAndPassword = getSaltAndPasswordImpl c
                       , createUser         = createUserImpl c
                       , createBoard        = createBoardImpl c
+                      , deleteBoard        = deleteBoardImpl c
                       , createColumn       = createColumnImpl c
                       , getBoard           = getBoardImpl c
                       , getBoards          = getBoardsImpl c
@@ -91,6 +92,21 @@ createBoardImpl c boardName = do
         " INSERT INTO board           \
         \ (boardid, boardname) VALUES \
         \ (      ?,         ?)        "
+
+deleteBoardImpl :: Connection -> BoardId -> IO ()
+deleteBoardImpl c boardId = do
+    execute c sqlDeleteUserBoard (Only (SqlBoardId boardId))
+    execute c sqlDeleteBoard     (Only (SqlBoardId boardId))
+    where
+    sqlDeleteUserBoard :: Query
+    sqlDeleteUserBoard =
+        " DELETE FROM user  \
+        \ WHERE boardid = ? "
+
+    sqlDeleteBoard :: Query
+    sqlDeleteBoard =
+        " DELETE FROM board \
+        \ WHERE boardid = ? "
 
 createColumnImpl :: Connection -> BoardId -> ColumnPosition -> ColumnName -> IO ColumnId
 createColumnImpl c boardId pos name = do

@@ -16,6 +16,7 @@ executable do-notation
                        Routes.CreateBoard,
                        Routes.CreatePassword,
                        Routes.CreateTicket,
+                       Routes.DeleteBoard,
                        Routes.DeleteTicket,
                        Routes.Login,
                        Routes.Logout,

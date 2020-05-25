@@ -13,6 +13,7 @@ data StorageApi = StorageApi
 
                 , createUser         :: UserId -> BoardId -> IO ()
                 , createBoard        :: BoardName -> IO BoardId
+                , deleteBoard        :: BoardId -> IO ()
                 , createColumn       :: BoardId -> ColumnPosition -> ColumnName -> IO ColumnId
 
                 , getBoard           :: BoardId -> IO (Maybe Board)
