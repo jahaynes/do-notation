@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase,
+             OverloadedStrings #-}
 
 module Routes.QueryTicket where
 
@@ -20,8 +21,10 @@ routeQueryTicket storageApi mColumnId mTicketId = do
 
     ticketId <- getTicketId mTicketId
 
-    catchAll "Could not query ticket"
-             (lift $ getTicket storageApi columnId ticketId)
+    catchAll "Could not query ticket" $
+        lift (getTicket storageApi columnId ticketId) >>= \case
+            Just ticket -> pure ticket
+            Nothing -> err 404 "No such ticket"
 
     where
     getColumnId Nothing    = err 400 "columnId not supplied."

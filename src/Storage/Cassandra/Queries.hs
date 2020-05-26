@@ -249,24 +249,25 @@ getColumnImpl c (ColumnId cid) =
         \ FROM do_notation.ticket  \
         \ WHERE columnId = ?       "
 
-moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO ()
+moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO (Either ErrorResponse ())
 moveTicketImpl c _ from to tid
-    | from == to = pure ()
+    | from == to = pure $ Right ()
     | otherwise = runClient c $ do
-        Ticket _ name content <- getTicketImpl' from tid    -- TODO maybe!
-        _ <- createTicketImpl' to tid name content
-        deleteTicketImpl' from tid
+        getTicketImpl' from tid >>= \case
+            Nothing -> err' 404 "No such ticket to move"
+            Just (Ticket _ name content) -> do
+                _ <- createTicketImpl' to tid name content
+                deleteTicketImpl' from tid
+                pure $ Right ()
 
--- TODO maybe!
-getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO Ticket
+getTicketImpl :: ClientState -> ColumnId -> TicketId -> IO (Maybe Ticket)
 getTicketImpl c cid tid = runClient c $ getTicketImpl' cid tid
 
--- TODO maybe!
-getTicketImpl' :: ColumnId -> TicketId -> Client Ticket
+getTicketImpl' :: ColumnId -> TicketId -> Client (Maybe Ticket)
 getTicketImpl' (ColumnId cid) (TicketId tid) =
     query1 cqlGetTicket (params (cid, tid)) >>= \case
-        Nothing -> error "no such ticket"
-        Just (id_, name, content) -> pure $ Ticket (TicketId id_) (TicketName name) (TicketContent content)
+        Nothing -> pure Nothing
+        Just (id_, name, content) -> pure . Just $ Ticket (TicketId id_) (TicketName name) (TicketContent content)
 
 cqlGetTicket :: PrepQuery R (UUID, UUID) (UUID, Text, Text)
 cqlGetTicket =

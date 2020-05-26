@@ -23,7 +23,9 @@ data StorageApi = StorageApi
                 , createTicket       :: ColumnId -> TicketName -> TicketContent -> IO TicketId
                 , updateTicket       :: ColumnId -> TicketId -> TicketName -> TicketContent -> IO ()
                 , deleteTicket       :: ColumnId -> TicketId -> IO ()
-                , getTicket          :: ColumnId -> TicketId -> IO Ticket
+                , getTicket          :: ColumnId -> TicketId -> IO (Maybe Ticket)
                 , getColumn          :: ColumnId -> IO [Ticket]
-                , moveTicket         :: BoardName -> ColumnId -> ColumnId -> TicketId -> IO () --todo boardname/boardid?
+
+                -- TODO boardname/boardid?
+                , moveTicket         :: BoardName -> ColumnId -> ColumnId -> TicketId -> IO (Either ErrorResponse ()) 
                 }

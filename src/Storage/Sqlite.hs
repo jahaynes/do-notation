@@ -241,13 +241,16 @@ getColumnImpl c (ColumnId cid) =
         \ FROM ticket              \
         \ WHERE columnId = ?       "
 
-moveTicketImpl :: Connection -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO ()
+moveTicketImpl :: Connection -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO (Either ErrorResponse ())
 moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
-    | from == to = pure ()
-    | otherwise = do
-        Ticket _ name content <- getTicketImpl c (ColumnId from) (TicketId tid)
-        putTicket name content
-        removeFromColumn
+    | from == to = pure $ Right ()
+    | otherwise =
+        getTicketImpl c (ColumnId from) (TicketId tid) >>= \case
+            Nothing -> err' 404 "No such ticket to move"
+            Just (Ticket _ name content) -> do
+                putTicket name content
+                removeFromColumn
+                pure $ Right ()
 
     where
     putTicket :: TicketName -> TicketContent -> IO ()
@@ -264,11 +267,11 @@ moveTicketImpl c _ (ColumnId from) (ColumnId to) (TicketId tid)
         \ WHERE columnid = ? \
         \ AND id = ?         " 
 
-getTicketImpl :: Connection -> ColumnId -> TicketId -> IO Ticket
+getTicketImpl :: Connection -> ColumnId -> TicketId -> IO (Maybe Ticket)
 getTicketImpl c (ColumnId cid) (TicketId tid) =
     query c sqlGetTicket (toText cid, toText tid) >>= \case
-        []                     -> error $ "no such ticket: " ++ show (cid, tid)
-        [(id_, name, content)] -> pure $ Ticket (TicketId . fromJust . fromText $ id_) (TicketName name) (TicketContent content)
+        []                     -> pure Nothing
+        [(id_, name, content)] -> pure . Just $ Ticket (TicketId . fromJust . fromText $ id_) (TicketName name) (TicketContent content)
         _                      -> error "Too many tickets"
 
 sqlGetTicket :: Query
