@@ -79,7 +79,7 @@ type DoAPI =
                            :> ReqBody '[JSON] MoveTicket
                            :> Post '[JSON] (Authed ())
 
-   :<|> "static" :> Raw
+   :<|> Raw
 
 server :: SecurityApi IO -> StorageApi -> Server DoAPI
 server securityApi storageApi =
