@@ -97,14 +97,16 @@ function newBoardInputBlur(restApi) {
     return async () => {
 
         const input = document.getElementById('newBoardInput');
-        const boardId = input.value;
+        const boardName = input.value.trim();
         input.value = '';
         input.classList.add('hidden');
 
         const button = document.getElementById('btnNewBoard');
         button.disabled = false;
 
-        restApi.createBoard(boardId);
+        if(boardName) {
+            restApi.createBoard(boardName);
+        }
     };
 }
 
