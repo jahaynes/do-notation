@@ -17,8 +17,8 @@ import           Data.Aeson
 import qualified Data.Vector as V
 import           GHC.Generics               (Generic)
 
-data DeleteBoard =
-    DeleteBoard { db_boardId :: !BoardId
+newtype DeleteBoard =
+    DeleteBoard { db_boardId :: BoardId
                 } deriving Generic
 
 instance FromJSON DeleteBoard where

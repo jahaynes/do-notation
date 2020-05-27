@@ -46,7 +46,7 @@ routeCreateBoard storageApi (CreateBoard boardName) userId = do
     boardNotAlreadyExists :: ExceptT ErrorResponse IO ()
     boardNotAlreadyExists = do
         boardNames <- map snd <$> lift (getBoards storageApi userId)
-        if any (== boardName) boardNames
+        if boardName `elem` boardNames
             then err 403 "Board already exists"
             else pure ()
 

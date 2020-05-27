@@ -252,7 +252,7 @@ getColumnImpl c (ColumnId cid) =
 moveTicketImpl :: ClientState -> BoardName -> ColumnId -> ColumnId -> TicketId -> IO (Either ErrorResponse ())
 moveTicketImpl c _ from to tid
     | from == to = pure $ Right ()
-    | otherwise = runClient c $ do
+    | otherwise = runClient c $
         getTicketImpl' from tid >>= \case
             Nothing -> err' 404 "No such ticket to move"
             Just (Ticket _ name content) -> do

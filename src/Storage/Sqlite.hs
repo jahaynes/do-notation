@@ -167,7 +167,7 @@ getBoardsImpl c userId = do
         \ WHERE userid = ? "
 
 withBoardName :: Connection -> BoardId -> IO (Maybe (BoardId, BoardName))
-withBoardName c boardId = do
+withBoardName c boardId =
     handle <$> query c sqlGetBoardName (SqlBoardId boardId)
     where
     handle :: [SqlBoardName] -> Maybe (BoardId, BoardName)
