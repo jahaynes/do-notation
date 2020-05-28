@@ -6,7 +6,24 @@ const panels = {
     CREATE_USER:   'create-user'
 }
 
+function clearAllInputs() {
+
+    // Clear login inputs
+    document.getElementById('input-login-user-name').value = '';
+    document.getElementById('input-login-user-password').value = '';
+    
+    // Clear create user inputs
+    document.getElementById('input-user-name').value = '';
+    document.getElementById('input-user-password').value = '';
+
+    // Clear create ticket inputs
+    document.getElementById('input-ticket-name').value = '';
+    document.getElementById('input-ticket-content').value = '';
+}
+
 function setVisible(visible) {
+
+    clearAllInputs();
 
     const login =
         document.getElementById('login');
