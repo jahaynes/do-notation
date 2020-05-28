@@ -68,19 +68,3 @@ function ticketSelect(event) {
 function getCurrentBoard() {
     return document.getElementById('boards').activeBoardId;
 }
-
-function clearLoginPanel() {
-    //TODO
-}
-
-function clearUserPanel() {
-    //TODO
-}
-
-function clearTicketPanel() {
-    const createTicketSection = document.getElementById('create-tickets');
-    createTicketSection.columnId = null;
-    createTicketSection.ticketId = null;
-    document.getElementById('input-ticket-name').value = '';
-    document.getElementById('input-ticket-content').value = '';
-}

@@ -183,7 +183,6 @@ function columnHeaderDropTicket(restApi) {
         const fromId   = event.dataTransfer.getData('from')
         const toId     = event.target.id;  
         const ticketId = event.dataTransfer.getData('ticket')
-        clearTicketPanel();
         setVisible(panels.NONE);
         restApi.moveTicket(getCurrentBoard(), fromId, toId, ticketId);
     };
