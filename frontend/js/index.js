@@ -59,10 +59,11 @@ function unauthHandler() {
 }
 
 function main() {
+    const restApi = createRestApi(unauthHandler);
     bindings(restApi);
     getBoards(restApi);
 }
 
-const restApi = createRestApi(unauthHandler);
+
 
 main();

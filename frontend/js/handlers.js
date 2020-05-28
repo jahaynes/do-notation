@@ -47,9 +47,6 @@ function updateTicket(restApi) {
                              strName,
                              strContent);
 
-        // TODO refresh action
-        // const boardId = getCurrentBoard();
-        // restApi.getBoard(boardId);
     };
 }
 

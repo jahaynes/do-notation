@@ -48,21 +48,24 @@ function setVisible(visible) {
     }
 }
 
-function ticketSelect(event) {
+function ticketSelect(restApi) {
 
-    const ticketId      = event.target.id;
-    const ticketElement = document.getElementById(ticketId);
-    const columnId      = ticketElement.columnId;
+    return async (event) => {
 
-    restApi.withTicket(columnId, ticketId,
-        function(ticket) {
-            document.getElementById('input-ticket-name').value = ticket.name;
-            document.getElementById('input-ticket-content').value = ticket.content;
-            const createTicketSection = document.getElementById('create-tickets');
-            createTicketSection.columnId = columnId;
-            createTicketSection.ticketId = ticketId;
-            createTicketSection.classList.add('visible');
-        });
+        const ticketId      = event.target.id;
+        const ticketElement = document.getElementById(ticketId);
+        const columnId      = ticketElement.columnId;
+
+        restApi.withTicket(columnId, ticketId,
+            function(ticket) {
+                document.getElementById('input-ticket-name').value = ticket.name;
+                document.getElementById('input-ticket-content').value = ticket.content;
+                const createTicketSection = document.getElementById('create-tickets');
+                createTicketSection.columnId = columnId;
+                createTicketSection.ticketId = ticketId;
+                createTicketSection.classList.add('visible');
+            });
+    };
 }
 
 function getCurrentBoard() {

@@ -7,7 +7,7 @@ function createRestApi(unauthHandler) {
            , "withBoard"    : restWithBoard(unauthHandler)
            , "createBoard"  : restCreateBoard
            , "deleteBoard"  : restDeleteBoard
-           , "getColumns"   : restGetColumns
+           , "withColumns"  : restWithColumns
            , "withTicket"   : restWithTicket
            , "createTicket" : restCreateTicket
            , "updateTicket" : restUpdateTicket
@@ -174,14 +174,12 @@ const restDeleteBoard =
 
             case 200:
                 console.log("deleted");
-                //const boardId = await response.json();
-                // restGetBoards();    //TODO pull out refresh action
         }
     }
 
 // TODO - singular?
-const restGetColumns =
-    async (columns) => {
+const restWithColumns =
+    async (columns, action) => {
 
         for (const columnNo in columns) {
             
@@ -199,10 +197,7 @@ const restGetColumns =
 
                 case 200:
                     const column = await response.json();
-                    const columnName = document.getElementById('list_' + columns[columnNo].name);
-                    for (const ticketNo in column) {
-                        columnName.appendChild(ticketAsElement(columnId, column[ticketNo]));
-                    }
+                    action(columnNo, column);
             }
 
             if(err) {
@@ -233,8 +228,6 @@ const restCreateTicket =
                 'Content-Type': 'application/json',
             }
         });
-
-        //restGetBoard(boardId); //TODO pull out refresh action
     }
 
 const restUpdateTicket =

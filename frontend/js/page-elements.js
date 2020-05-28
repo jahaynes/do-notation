@@ -1,20 +1,25 @@
-function ticketAsElement(columnId, jsonTicket) {
+function ticketAsElement(restApi) {
 
-    const li = document.createElement('li');
-    li.id = jsonTicket.id;
-    li.columnId = columnId;
-    li.classList.add('ticket-li');
-    li.draggable = 'true';
-    li.addEventListener('dragstart', ticketOnDragStart);
-    li.addEventListener('click', ticketSelect);
+    const ticketSelectImpl = ticketSelect(restApi);
 
-    const p = document.createElement('p');
-    p.classList.add('noselect');
-    p.classList.add('noclick');
-    p.textContent = jsonTicket.content;
+    return async(columnId, jsonTicket) => {
 
-    li.appendChild(p);
-    return li;
+        const li = document.createElement('li');
+        li.id = jsonTicket.id;
+        li.columnId = columnId;
+        li.classList.add('ticket-li');
+        li.draggable = 'true';
+        li.addEventListener('dragstart', ticketOnDragStart);
+        li.addEventListener('click', ticketSelectImpl);
+
+        const p = document.createElement('p');
+        p.classList.add('noselect');
+        p.classList.add('noclick');
+        p.textContent = jsonTicket.content;
+
+        li.appendChild(p);
+        return li;
+    };
 }
 
 function buildBoards(restApi) {
@@ -123,11 +128,25 @@ function boardSelectById(restApi) {
 
     const buildColumnHeadersImpl = buildColumnHeaders(restApi);
 
+    const ticketAsElementImpl = ticketAsElement(restApi);
+
     return async(boardId) => {
         document.getElementById('boards').activeBoardId = boardId;
         restApi.withBoard(boardId, async (board) => {
-            await buildColumnHeadersImpl(board.columns);
-            restApi.getColumns(board.columns);
+
+            const columns = board.columns;
+
+            await buildColumnHeadersImpl(columns);
+            restApi.withColumns(columns, async(columnNo, column) => {
+
+                const columnName = document.getElementById('list_' + columns[columnNo].name);
+
+                const columnId = columns[columnNo].columnid;
+
+                for (const ticketNo in column) {
+                    columnName.appendChild(await ticketAsElementImpl(columnId, column[ticketNo]));
+                }
+            });
         });
     };
 }
