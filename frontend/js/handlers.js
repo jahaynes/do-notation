@@ -102,7 +102,7 @@ function login(restApi) {
 
 const cancelLogin =
     async (event) => {
-        // TODO
+        setVisible(panels.NONE);
     };
 
 function createUser(restApi) {
@@ -117,7 +117,7 @@ function createUser(restApi) {
 
 const cancelCreateUser =
     async (event) => {
-        // TODO
+        setVisible(panels.NONE);
     };
 
 function ticketOnDragStart(event) {
