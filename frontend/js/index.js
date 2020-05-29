@@ -46,7 +46,7 @@ function bindings(restApi) {
             .addEventListener('click', cancelCreateTicket);
 
     document.getElementById('btn-delete-ticket')
-            .addEventListener('click', deleteTicket);
+            .addEventListener('click', deleteTicket(restApi));
 }
 
 function getBoards(restApi) {
@@ -63,7 +63,5 @@ function main() {
     bindings(restApi);
     getBoards(restApi);
 }
-
-
 
 main();

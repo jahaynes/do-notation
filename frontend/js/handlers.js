@@ -21,32 +21,44 @@ const showCreateTicket =
     };
 
 function createTicket(restApi) {
+
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
     return async (event) => {
         const boardId    = getCurrentBoard();
         const strName    = document.getElementById('input-ticket-name').value;
         const strContent = document.getElementById('input-ticket-content').value;
-        
-        await restApi.createTicket(boardId,
-                                   strName,
-                                   strContent);
-        
+
         setVisible(panels.NONE);
+
+        // Create ticket & refresh page
+        restApi.createTicket(boardId,
+                             strName,
+                             strContent);
+                            
+        boardSelectByIdImpl(boardId);
     };
 }
 
 function updateTicket(restApi) {
+
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
     return async (event) => {
         const createTicketSection = document.getElementById('create-tickets');
         const columnId   = createTicketSection.columnId;
         const ticketId   = createTicketSection.ticketId;
         const strName    = document.getElementById('input-ticket-name').value;
         const strContent = document.getElementById('input-ticket-content').value;
-        
-        restApi.updateTicket(columnId,
-                             ticketId,
-                             strName,
-                             strContent);
 
+        setVisible(panels.NONE);
+
+        // Update ticket & refresh page
+        await restApi.updateTicket(columnId,
+                                   ticketId,
+                                   strName,
+                                   strContent);
+        boardSelectByIdImpl(getCurrentBoard());
     };
 }
 
@@ -56,6 +68,9 @@ const cancelCreateTicket =
     };
 
 function deleteTicket(restApi) {
+
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
     return async (event) => {
         const createTicketSection = document.getElementById('create-tickets');
 
@@ -63,8 +78,13 @@ function deleteTicket(restApi) {
         const columnId = createTicketSection.columnId;
         const ticketId = createTicketSection.ticketId;
 
-        await restApi.deleteTicket(boardId, columnId, ticketId);
         setVisible(panels.NONE);
+
+        // Delete ticket & refresh page
+        await restApi.deleteTicket(boardId,
+                                   columnId,
+                                   ticketId);
+        boardSelectByIdImpl(boardId);
     };
 }
 

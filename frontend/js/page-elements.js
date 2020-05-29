@@ -2,7 +2,7 @@ function ticketAsElement(restApi) {
 
     const ticketSelectImpl = ticketSelect(restApi);
 
-    return async(columnId, jsonTicket) => {
+    return (columnId, jsonTicket) => {
 
         const li = document.createElement('li');
         li.id = jsonTicket.id;
@@ -33,12 +33,12 @@ function buildBoards(restApi) {
         boards.textContent = '';
 
         const ul = document.createElement('ul');   
-        ul.appendChild(await newBoardAsElementImpl());
+        ul.appendChild(newBoardAsElementImpl());
 
         for(const bian in boardIdsAndNames) {
             const boardId = boardIdsAndNames[bian][0];
             const boardName = boardIdsAndNames[bian][1];
-            ul.appendChild(await boardAsElementImpl(boardId, boardName));
+            ul.appendChild(boardAsElementImpl(boardId, boardName));
         }
 
         boards.appendChild(ul);
@@ -49,7 +49,7 @@ function boardAsElement(restApi) {
 
     const boardSelectByInputImpl = boardSelectByInput(restApi);
 
-    return async(boardId, boardName) => {
+    return (boardId, boardName) => {
         const li = document.createElement('li');
 
         const button = document.createElement('button');
@@ -66,7 +66,7 @@ function newBoardAsElement(restApi) {
 
     const newBoardInputBlurImpl = newBoardInputBlur(restApi);
 
-    return async () => {
+    return () => {
 
         const li = document.createElement('li');  
 
@@ -99,6 +99,8 @@ function buttonNewBoardClick() {
 
 function newBoardInputBlur(restApi) {
 
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
     return async () => {
 
         const input = document.getElementById('newBoardInput');
@@ -110,7 +112,11 @@ function newBoardInputBlur(restApi) {
         button.disabled = false;
 
         if(boardName) {
-            restApi.createBoard(boardName);
+            const result = await restApi.createBoard(boardName);
+            if(result.success) {
+                getBoards(restApi);
+                boardSelectByIdImpl(result.boardId);
+            }
         }
     };
 }
@@ -144,7 +150,7 @@ function boardSelectById(restApi) {
                 const columnId = columns[columnNo].columnid;
 
                 for (const ticketNo in column) {
-                    columnName.appendChild(await ticketAsElementImpl(columnId, column[ticketNo]));
+                    columnName.appendChild(ticketAsElementImpl(columnId, column[ticketNo]));
                 }
             });
         });
@@ -161,17 +167,15 @@ function buildColumnHeaders(restApi) {
         const tickets = document.getElementById('tickets');
         tickets.textContent = '';
         for (const columnNo in columns) {
-            tickets.appendChild(await columnHeaderAsElementImpl(columns[columnNo]));
+            tickets.appendChild(columnHeaderAsElementImpl(columns[columnNo]));
         }
-        tickets.appendChild(await deleteBoardButtonImpl());
+        tickets.appendChild(deleteBoardButtonImpl());
     };
 }
 
 function columnHeaderAsElement(restApi) {
 
-    const columnHeaderDropTicketImpl = columnHeaderDropTicket(restApi);
-
-    return async(column) => {
+    return column => {
         const ul = document.createElement('ul');
         ul.id = 'list_' + column.name;
         ul.classList.add('ticket-column');
@@ -181,7 +185,7 @@ function columnHeaderAsElement(restApi) {
         const h2 = document.createElement('h2');
         h2.id = column.columnid;
         h2.addEventListener('dragover', columnHeaderAllowDrop);
-        h2.addEventListener('drop', columnHeaderDropTicketImpl);
+        h2.addEventListener('drop', columnHeaderDropTicket(restApi));
         h2.classList.add('noselect');
         h2.classList.add('ticket-header');
         h2.textContent = column.name;
@@ -197,13 +201,20 @@ function columnHeaderAllowDrop(event) {
 }
 
 function columnHeaderDropTicket(restApi) {
+
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
     return async (event) => {
         event.preventDefault();
         const fromId   = event.dataTransfer.getData('from')
         const toId     = event.target.id;  
         const ticketId = event.dataTransfer.getData('ticket')
         setVisible(panels.NONE);
-        restApi.moveTicket(getCurrentBoard(), fromId, toId, ticketId);
+
+        // Move ticket & refresh page
+        const boardId = getCurrentBoard();
+        await restApi.moveTicket(boardId, fromId, toId, ticketId);
+        boardSelectByIdImpl(boardId);
     };
 }
 
@@ -211,7 +222,7 @@ function deleteBoardButton(restApi) {
 
     const deleteCurrentBoardImpl = deleteCurrentBoard(restApi);
 
-    return async() => {
+    return () => {
 
         const ul = document.createElement('ul');
         ul.classList.add('ticket-column');
@@ -232,10 +243,11 @@ function deleteBoardButton(restApi) {
 }
 
 function deleteCurrentBoard(restApi) {
-
     return async() => {
         const boardId = getCurrentBoard();
-        console.log(boardId);
-        restApi.deleteBoard(boardId);
+        const success = await restApi.deleteBoard(boardId);
+        if(success) {
+            location = location;
+        }
     }
 }

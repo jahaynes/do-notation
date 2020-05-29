@@ -112,7 +112,6 @@ function restWithBoard(unauthHandler) {
             case 200:
                 const board = await response.json();
                 f(board);
-
                 break;
 
             case 401:
@@ -133,17 +132,25 @@ const restCreateBoard =
                 }
             });
 
+        var success = false;
+        var boardId = '';
+
         switch(response.status) {
+
+            case 200:
+                boardId = await response.json();
+                success = true;
+                break;
 
             case 401:
                 //TODO
                 console.log("auth error");
                 break;
-
-            case 200:
-                const boardId = await response.json();
-                // restGetBoards();    //TODO pull out refresh action
         }
+
+        return { "success": success
+               , "boardId": boardId
+               };
     }
 
 const restDeleteBoard = 
@@ -157,10 +164,16 @@ const restDeleteBoard =
                 }
             });
 
+        var success = false;
+
         switch(response.status) {
 
+            case 200:
+                success = true;
+                console.log("deleted");
+                break;
+
             case 401:
-                //TODO
                 console.log("auth error");
                 break;
 
@@ -171,18 +184,17 @@ const restDeleteBoard =
             case 404:
                 console.log("board not found");
                 break;
-
-            case 200:
-                console.log("deleted");
         }
+
+        return success;
     }
 
 // TODO - singular?
 const restWithColumns =
-    async (columns, action) => {
+    async (columns, f) => {
 
         for (const columnNo in columns) {
-            
+
             let err = false;
             const columnId = columns[columnNo].columnid;
 
@@ -190,14 +202,15 @@ const restWithColumns =
 
             switch(response.status) {
 
+                case 200:
+                    const column = await response.json();
+                    f(columnNo, column);
+                    break;
+
                 case 401:
                     err = true;
                     //  authFailHandler(); // TODO
                     break;
-
-                case 200:
-                    const column = await response.json();
-                    action(columnNo, column);
             }
 
             if(err) {
@@ -206,13 +219,13 @@ const restWithColumns =
         }
     }
 
-// TODO Unwith?
-// error handler
 const restWithTicket =
     async (columnId, ticketId, f) => {
         const response = await fetch('/ticket?columnId=' + columnId + "&ticketId=" + ticketId);
         const json = await response.json();
         f(json);
+
+        //TODO check status
     }
 
 const restCreateTicket = 
@@ -228,6 +241,8 @@ const restCreateTicket =
                 'Content-Type': 'application/json',
             }
         });
+
+        //TODO check status
     }
 
 const restUpdateTicket =
@@ -264,7 +279,6 @@ const restDeleteTicket =
             });
 
         //TODO check status
-        //restGetBoard(boardId); //TODO pull out refresh action
     }
 
 const restMoveTicket =
@@ -283,5 +297,5 @@ const restMoveTicket =
                 }
             });
 
-        //restGetBoard(boardId); //TODO pull out refresh action
+        //TODO check status
     }
