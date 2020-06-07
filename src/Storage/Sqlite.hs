@@ -41,7 +41,7 @@ createSqlite filename = do
                       , updateTicket       = updateTicketImpl c
                       , deleteTicket       = deleteTicketImpl c
                       , getTicket          = getTicketImpl c
-                      , getColumn          = getColumnImpl c
+                      , getColumnTickets   = getColumnTicketsImpl c
                       , moveTicket         = moveTicketImpl c
                       }
 
@@ -229,8 +229,8 @@ deleteTicketImpl c (ColumnId cid) (TicketId tid) =
         \ WHERE columnId = ? \
         \ AND   id       = ? "
 
-getColumnImpl :: Connection -> ColumnId -> IO [Ticket]
-getColumnImpl c (ColumnId cid) =
+getColumnTicketsImpl :: Connection -> ColumnId -> IO [Ticket]
+getColumnTicketsImpl c (ColumnId cid) =
     map toTicket <$> query c sqlGetColumn (Only $ toText cid)
     where
     toTicket (ti, name, content) =
@@ -312,7 +312,7 @@ createSqlTables c = do
     schemaCreateBoard = 
         " CREATE TABLE IF NOT EXISTS             \
         \   board                                \
-        \     ( boardid   TEXT                   \
+        \     ( boardid   UUID                   \
         \     , boardname TEXT                   \
         \     , PRIMARY KEY (boardid, boardname) \
         \     )                                  "
@@ -321,8 +321,8 @@ createSqlTables c = do
     schemaCreateColumn = 
         " CREATE TABLE IF NOT EXISTS            \
         \   column                              \
-        \     ( boardid     TEXT                \
-        \     , columnid    TEXT                \
+        \     ( boardid     UUID                \
+        \     , columnid    UUID                \
         \     , position    INT                 \
         \     , columnname  TEXT                \
         \     , PRIMARY KEY (boardid, columnid) \

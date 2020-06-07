@@ -8,6 +8,7 @@ function createRestApi(unauthHandler) {
            , "createBoard"  : restCreateBoard
            , "deleteBoard"  : restDeleteBoard
            , "withColumns"  : restWithColumns
+           , "createColumn" : restCreateColumn
            , "withTicket"   : restWithTicket
            , "createTicket" : restCreateTicket
            , "updateTicket" : restUpdateTicket
@@ -217,6 +218,38 @@ const restWithColumns =
                 break;
             }
         }
+    }
+
+const restCreateColumn =
+    async (boardId, columnName) => {
+        const body = { 'boardId': boardId
+                     , 'columnName': columnName
+                     };
+        const response =
+                await fetch('/column', {
+                        method: 'POST',
+                        body: JSON.stringify(body),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+        var success = false;
+
+        switch(response.status) {
+
+            case 200:
+                success = true;
+                break;
+
+            case 401:
+                console.log("auth error");
+                break;
+        }
+
+        return { "success": success
+               , "boardId": boardId
+               };
     }
 
 const restWithTicket =

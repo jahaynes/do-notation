@@ -29,6 +29,9 @@ newtype ColumnPosition =
     ColumnPosition { cp_position :: Int
                    } deriving (Eq, Ord)
 
+instance FromJSON ColumnPosition where
+    parseJSON p = ColumnPosition <$> parseJSON p
+
 newtype ColumnId =
     ColumnId { cn_id :: UUID
              } deriving (Eq, Ord, Generic, NFData)
@@ -45,6 +48,9 @@ instance FromHttpApiData ColumnId where
 newtype ColumnName =
     ColumnName { cn_value :: Text
                } deriving (Eq, Ord, Generic, NFData)
+
+instance FromJSON ColumnName where
+    parseJSON cn = ColumnName <$> parseJSON cn
 
 instance ToJSON ColumnName where
     toJSON (ColumnName cn) = toJSON cn

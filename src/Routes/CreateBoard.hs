@@ -7,7 +7,6 @@ import Errors
 import Storage.StorageApi
 import Types.Board
 import Types.BoardId
-import Types.Column
 import Types.Json
 import Types.User
 
@@ -39,7 +38,6 @@ routeCreateBoard storageApi (CreateBoard boardName) userId = do
         lift $ do
             boardId <- createBoard storageApi boardName
             createUser storageApi userId boardId
-            _ <- createColumn storageApi boardId (ColumnPosition 1) (ColumnName "default")
             pure boardId
 
     where

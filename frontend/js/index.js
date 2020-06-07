@@ -12,6 +12,9 @@ function bindings(restApi) {
     document.getElementById('btn-show-create-user')
             .addEventListener('click', showCreateUser);
 
+    document.getElementById('btn-show-create-column')
+            .addEventListener('click', showCreateColumn);
+
     document.getElementById('btn-show-create-ticket')
             .addEventListener('click', showCreateTicket);
 
@@ -33,6 +36,13 @@ function bindings(restApi) {
     document.getElementById('btn-cancel-create-user')
             .addEventListener('click', cancelCreateUser);
 
+    // Create column panel
+
+    document.getElementById('btn-create-column')
+            .addEventListener('click', createColumn(restApi));
+
+    document.getElementById('btn-cancel-create-column')
+            .addEventListener('click', cancelCreateColumn);
 
     // Create ticket panel
 

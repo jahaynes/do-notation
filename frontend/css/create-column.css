@@ -1,0 +1,45 @@
+.create-column.visible {
+    display: block;
+} 
+
+.create-column {
+    display: none;
+    background-color:purple;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.create-column input {
+    border: none;
+    background-color: beige;
+    width: 15rem;
+    min-height: 2em;
+    padding: 0.25em;
+    display: block;
+    font-size: 1rem;
+}
+
+.create-column .lblfield {
+    display: block;
+    margin-top: 1em;
+    font-size: 1.3em;
+}
+
+.create-column .lblfield:first-of-type {
+    margin-top: 0;
+}
+
+#create-column-commands {
+    display: flex;
+    margin-top: 1em;
+    width: 15.5rem;
+}
+
+#create-column-commands input {
+    margin: 0 0 0 1em;
+}
+
+#create-column-commands input:first-of-type {
+    margin-left: 0;
+}
+  

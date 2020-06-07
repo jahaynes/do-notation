@@ -42,7 +42,7 @@ createApi c =
                , updateTicket       = updateTicketImpl c
                , deleteTicket       = deleteTicketImpl c
                , getTicket          = getTicketImpl c
-               , getColumn          = getColumnImpl c
+               , getColumnTickets   = getColumnTicketsImpl c
                , moveTicket         = moveTicketImpl c
                }
 
@@ -236,8 +236,8 @@ deleteTicketImpl' (ColumnId cid) (TicketId tid) =
         \ WHERE columnid = ?             \
         \ AND   id       = ?             " 
 
-getColumnImpl :: ClientState -> ColumnId -> IO [Ticket]
-getColumnImpl c (ColumnId cid) =
+getColumnTicketsImpl :: ClientState -> ColumnId -> IO [Ticket]
+getColumnTicketsImpl c (ColumnId cid) =
     runClient c $ map toTicket <$> query cqlGetColumn (params (Identity cid))
     where
     toTicket (ti, name, content) =

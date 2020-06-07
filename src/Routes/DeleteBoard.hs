@@ -51,7 +51,7 @@ routeDeleteBoard storageApi (DeleteBoard boardId) =
             Just board -> lift $ do
 
                 -- TODO - can abort early if ticket found
-                ticketss <- V.mapM (getColumn storageApi)
+                ticketss <- V.mapM (getColumnTickets storageApi)
                           . V.map c_columnid
                           . b_columns 
                           $ board

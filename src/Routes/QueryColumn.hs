@@ -17,7 +17,7 @@ routeQueryColumn storageApi mColumnId =
 
     catchAll "Could not query column." $ do
         columnId <- getColumnId mColumnId
-        lift (getColumn storageApi columnId)
+        lift (getColumnTickets storageApi columnId)
 
     where
     getColumnId Nothing   = err 400 "No columnId supplied."

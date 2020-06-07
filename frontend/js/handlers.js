@@ -15,6 +15,11 @@ const showCreateUser =
         setVisible(panels.CREATE_USER);
     };
 
+const showCreateColumn =
+    async (event) => {
+        setVisible(panels.CREATE_COLUMN);
+    };
+
 const showCreateTicket =
     async (event) => {
         setVisible(panels.CREATE_TICKET);
@@ -129,13 +134,30 @@ function createUser(restApi) {
     return async (event) => {
         const strName     = document.getElementById('input-user-name').value;
         const strPassword = document.getElementById('input-user-password').value;
-        await restApi.createUser(strName,
-                                 strPassword);
+        await restApi.createUser(strName, strPassword);
         setVisible(panels.NONE);
     };
 }
 
 const cancelCreateUser =
+    async (event) => {
+        setVisible(panels.NONE);
+    };
+
+function createColumn(restApi) {
+
+    const boardSelectByIdImpl = boardSelectById(restApi);
+
+    return async (event) => {
+        const boardId       = getCurrentBoard();
+        const strColumnName = document.getElementById('input-column-name').value;
+        await restApi.createColumn(boardId, strColumnName);
+        setVisible(panels.NONE);
+        boardSelectByIdImpl(boardId);
+    };
+}
+
+const cancelCreateColumn =
     async (event) => {
         setVisible(panels.NONE);
     };
