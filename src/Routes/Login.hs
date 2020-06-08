@@ -18,6 +18,7 @@ import Data.Aeson
 import Data.Binary.Builder
 import Data.ByteString.Lazy       (toStrict)
 import Data.Text.Encoding         (decodeUtf8, encodeUtf8)
+import Data.Time.Clock            (secondsToDiffTime)
 import GHC.Generics               (Generic)
 import Web.Cookie
 
@@ -30,11 +31,11 @@ instance FromJSON Login where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeLogin' :: SecurityApi m
-            -> StorageApi
-            -> Login
-            -> ExceptT ErrorResponse IO CookieHeader
-routeLogin' securityApi storageApi (Login uname pw) = do
+routeLogin :: SecurityApi m
+           -> StorageApi
+           -> Login
+           -> ExceptT ErrorResponse IO CookieHeader
+routeLogin securityApi storageApi (Login uname pw) = do
     maybeSaltPw <- lift (getSaltAndPassword storageApi uname)
     case maybeSaltPw of
         Nothing -> err 401 "Bad username or password."
@@ -50,6 +51,7 @@ routeLogin' securityApi storageApi (Login uname pw) = do
                                    $ defaultSetCookie { setCookieName     = "authToken"
                                                       , setCookieHttpOnly = True
                                                       , setCookieSecure   = True
+                                                      , setCookieMaxAge   = Just $ secondsToDiffTime 172800 -- 2 days
                                                       , setCookiePath     = Just "/"
                                                       , setCookieSameSite = Just sameSiteStrict
                                                       , setCookieValue    = encodeUtf8 authToken }

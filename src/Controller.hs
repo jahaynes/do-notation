@@ -90,7 +90,7 @@ server :: SecurityApi IO -> StorageApi -> Server DoAPI
 server securityApi storageApi =
 
          (\login -> handle 
-                  $ routeLogin' securityApi storageApi login >>= \cookieHeader -> pure $ addHeader cookieHeader ()
+                  $ routeLogin securityApi storageApi login >>= \cookieHeader -> pure $ addHeader cookieHeader ()
                   )
 
     :<|> pure (addHeader routeLogout ())

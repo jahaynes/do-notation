@@ -62,6 +62,7 @@ executable do-notation
                        split,
                        sqlite-simple,
                        text,
+                       time,
                        transformers,
                        uuid,
                        vector,
