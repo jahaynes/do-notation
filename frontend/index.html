@@ -10,15 +10,17 @@
   <link rel="stylesheet" type="text/css" href="css/create-column.css">
   <link rel="stylesheet" type="text/css" href="css/create-tickets.css">
   <link rel="stylesheet" type="text/css" href="css/create-user.css">
+  <link rel="stylesheet" type="text/css" href="css/share-board.css">
 </head>
 <body>
 
   <section id="controls" class="controls-container container">
-    <input id='btn-show-login'         type=button value='Login'         class='lblbtn'/>
-    <input id='btn-logout'             type=button value='Logout'        class='lblbtn'/>
-    <input id='btn-show-create-user'   type=button value='Create user'   class='lblbtn'/>
-    <input id='btn-show-create-column' type=button value='Create column' class='lblbtn'/>
-    <input id='btn-show-create-ticket' type=button value='Create ticket' class='lblbtn'/>
+    <input id='btn-show-login'         type=button value='Login'                  class='lblbtn'/>
+    <input id='btn-logout'             type=button value='Logout'                 class='lblbtn'/>
+    <input id='btn-show-create-user'   type=button value='Create user'            class='lblbtn'/>
+    <input id='btn-show-create-column' type=button value='Create column'          class='lblbtn'/>
+    <input id='btn-show-create-ticket' type=button value='Create ticket'          class='lblbtn'/>
+    <input id='btn-show-share-board'   type=button value='Share board'   disabled class='lblbtn'/>
   </section>
 
   <section id="boards" class="boards-container container">
@@ -78,6 +80,19 @@
       <div id='create-column-commands'>
         <input id='btn-create-column'        type=button value='Create column' class='lblbtn'/>
         <input id='btn-cancel-create-column' type=button value='Cancel'      class='lblbtn'/>
+      </div>
+    </form>
+  </section>
+
+  <section id="share-board" class="share-board container">
+    <form>
+      <label for='input-board-id' class='lblfield'>board</label>
+      <input  id='input-board-id' disabled/>
+      <label for='input-share-user-name' class='lblfield'>user</label>
+      <input  id='input-share-user-name'/>
+      <div id='share-board-commands'>
+        <input id='btn-share-board'        type=button value='Share'  class='lblbtn'/>
+        <input id='btn-cancel-share-board' type=button value='Cancel' class='lblbtn'/>
       </div>
     </form>
   </section>

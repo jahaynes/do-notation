@@ -4,7 +4,8 @@ const panels = {
     LOGIN:         'login',
     CREATE_COLUMN: 'create-column',
     CREATE_TICKET: 'create-ticket',
-    CREATE_USER:   'create-user'
+    CREATE_USER:   'create-user',
+    SHARE_BOARD:   'share-board'
 }
 
 function clearAllInputs() {
@@ -41,41 +42,38 @@ function setVisible(visible) {
     const createUser =
         document.getElementById('create-user');
 
+    const shareBoard =
+        document.getElementById('share-board');
+
+    login.classList.remove('visible');
+    createColumn.classList.remove('visible');
+    createTicket.classList.remove('visible');
+    createUser.classList.remove('visible');
+    shareBoard.classList.remove('visible');
+
     switch(visible) {
 
         case panels.NONE:
-            login.classList.remove('visible');
-            createColumn.classList.remove('visible');
-            createTicket.classList.remove('visible');
-            createUser.classList.remove('visible');
         break;
 
         case panels.LOGIN:
             login.classList.add('visible');
-            createColumn.classList.remove('visible');
-            createTicket.classList.remove('visible');
-            createUser.classList.remove('visible');
         break;
 
         case panels.CREATE_COLUMN:
-            login.classList.remove('visible');
             createColumn.classList.add('visible');
-            createTicket.classList.remove('visible');
-            createUser.classList.remove('visible');
         break;
 
         case panels.CREATE_TICKET:
-            login.classList.remove('visible');
-            createColumn.classList.remove('visible');
             createTicket.classList.add('visible');
-            createUser.classList.remove('visible');
         break;
 
         case panels.CREATE_USER:
-            login.classList.remove('visible');
-            createColumn.classList.remove('visible');
-            createTicket.classList.remove('visible');
             createUser.classList.add('visible');
+        break;
+
+        case panels.SHARE_BOARD:
+            shareBoard.classList.add('visible');
         break;
 
         default:

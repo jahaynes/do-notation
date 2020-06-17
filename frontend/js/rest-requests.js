@@ -5,6 +5,7 @@ function createRestApi(unauthHandler) {
            , "createUser"   : restCreateUser
            , "withBoards"   : restWithBoards(unauthHandler)
            , "withBoard"    : restWithBoard(unauthHandler)
+           , "shareBoard"   : restShareBoard(unauthHandler)
            , "createBoard"  : restCreateBoard
            , "deleteBoard"  : restDeleteBoard
            , "withColumns"  : restWithColumns
@@ -119,9 +120,41 @@ function restWithBoard(unauthHandler) {
                 unauthHandler();
                 break;
         }
-    }
+    };
 }
+
+function restShareBoard(unauthHandler) {
     
+    return async (boardId, otherUser) => {
+
+        const body = { 'boardId':   boardId
+                     , 'otherUser': otherUser
+                     };
+
+        const response =
+            await fetch('/share-board', {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json'
+                }});
+
+        var success = false;
+        switch(response.status) {
+
+            case 200:
+                success = true;
+                break;
+
+            case 401:
+                unauthHandler();
+                break;
+        }
+
+        return success;
+    };
+}
+
 const restCreateBoard = 
     async (boardName) => {
         const response =

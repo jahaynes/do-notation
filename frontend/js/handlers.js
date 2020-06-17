@@ -25,6 +25,11 @@ const showCreateTicket =
         setVisible(panels.CREATE_TICKET);
     };
 
+const showShareBoard =
+    async (event) => {
+        setVisible(panels.SHARE_BOARD);
+    };
+
 function createTicket(restApi) {
 
     const boardSelectByIdImpl = boardSelectById(restApi);
@@ -170,3 +175,18 @@ function ticketOnDragStart(event) {
     event.dataTransfer.setData('ticket', ticket);
     event.dataTransfer.setData('from', from);
 }
+
+function shareBoard(restApi) {
+    return async (event) => {
+        const boardId = document.getElementById('input-board-id').value;
+        const strOtherUser = document.getElementById('input-share-user-name').value;
+        if (await restApi.shareBoard(boardId, strOtherUser)) {
+            setVisible(panels.NONE);
+        }
+    };
+}
+
+const cancelShareBoard =
+    async (event) => {
+        setVisible(panels.NONE);
+    };

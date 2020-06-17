@@ -13,6 +13,7 @@ import Routes.CreateTicket
 import Routes.DeleteBoard
 import Routes.DeleteTicket
 import Routes.QueryBoard
+import Routes.ShareBoard
 import Routes.Login
 import Routes.Logout
 import Routes.MoveTicket
@@ -54,6 +55,10 @@ type DoAPI =
    :<|> "board" :> Header "Cookie" CookieHeader
                 :> ReqBody '[JSON] DeleteBoard
                 :> Delete '[JSON] (Authed ())
+ 
+   :<|> "share-board" :> Header "Cookie" CookieHeader
+                      :> ReqBody '[JSON] ShareBoard
+                      :> Post '[JSON] (Authed ())
 
    :<|> "column" :> Header "Cookie" CookieHeader
                  :> QueryParam "columnId" ColumnId
@@ -119,6 +124,10 @@ server securityApi storageApi =
     :<|> (\mCookie deleteBoardReq -> handle
                                    $ withAuthorisation securityApi mCookie
                                    $ \_ -> routeDeleteBoard storageApi deleteBoardReq)
+
+    :<|> (\mCookie shareBoardReq -> handle
+                                  $ withAuthorisation securityApi mCookie
+                                  $ \userId -> routeShareBoard storageApi shareBoardReq userId)
 
     :<|> (\mCookie mUUID -> handle
                           $ withAuthorisation securityApi mCookie

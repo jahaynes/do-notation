@@ -18,6 +18,8 @@ function bindings(restApi) {
     document.getElementById('btn-show-create-ticket')
             .addEventListener('click', showCreateTicket);
 
+    document.getElementById('btn-show-share-board')
+            .addEventListener('click', showShareBoard);
 
     // Login panel
 
@@ -26,7 +28,6 @@ function bindings(restApi) {
 
     document.getElementById('btn-cancel-login')
             .addEventListener('click', cancelLogin);
-
 
     // Create user panel
 
@@ -57,6 +58,14 @@ function bindings(restApi) {
 
     document.getElementById('btn-delete-ticket')
             .addEventListener('click', deleteTicket(restApi));
+
+    // Share board panel
+    document.getElementById('btn-share-board')
+            .addEventListener('click', shareBoard(restApi));
+
+    document.getElementById('btn-cancel-share-board')
+            .addEventListener('click', cancelShareBoard);
+
 }
 
 function getBoards(restApi) {

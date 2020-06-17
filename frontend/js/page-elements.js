@@ -137,23 +137,31 @@ function boardSelectById(restApi) {
     const ticketAsElementImpl = ticketAsElement(restApi);
 
     return async(boardId) => {
-        document.getElementById('boards').activeBoardId = boardId;
-        restApi.withBoard(boardId, async (board) => {
 
-            const columns = board.columns;
+        if (boardId) {
 
-            await buildColumnHeadersImpl(columns);
-            restApi.withColumns(columns, async(columnNo, column) => {
+            document.getElementById('boards').activeBoardId = boardId;
 
-                const columnName = document.getElementById('list_' + columns[columnNo].name);
+            document.getElementById('input-board-id').value = boardId;
+            document.getElementById('btn-show-share-board').removeAttribute('disabled');
 
-                const columnId = columns[columnNo].columnid;
+            restApi.withBoard(boardId, async (board) => {
 
-                for (const ticketNo in column) {
-                    columnName.appendChild(ticketAsElementImpl(columnId, column[ticketNo]));
-                }
+                const columns = board.columns;
+
+                await buildColumnHeadersImpl(columns);
+                restApi.withColumns(columns, async(columnNo, column) => {
+
+                    const columnName = document.getElementById('list_' + columns[columnNo].name);
+
+                    const columnId = columns[columnNo].columnid;
+
+                    for (const ticketNo in column) {
+                        columnName.appendChild(ticketAsElementImpl(columnId, column[ticketNo]));
+                    }
+                });
             });
-        });
+        }
     };
 }
 

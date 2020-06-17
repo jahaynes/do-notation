@@ -1,0 +1,45 @@
+.share-board.visible {
+    display: block;
+} 
+
+.share-board {
+    display: none;
+    background-color:purple;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.share-board input {
+    border: none;
+    background-color: beige;
+    width: 15rem;
+    min-height: 2em;
+    padding: 0.25em;
+    display: block;
+    font-size: 1rem;
+}
+
+.share-board .lblfield {
+    display: block;
+    margin-top: 1em;
+    font-size: 1.3em;
+}
+
+.share-board .lblfield:first-of-type {
+    margin-top: 0;
+}
+
+#share-board-commands {
+    display: flex;
+    margin-top: 1em;
+    width: 15.5rem;
+}
+
+#share-board-commands input {
+    margin: 0 0 0 1em;
+}
+
+#share-board-commands input:first-of-type {
+    margin-left: 0;
+}
+  
