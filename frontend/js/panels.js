@@ -101,6 +101,10 @@ function ticketSelect(restApi) {
     };
 }
 
+function setCurrentBoard(boardId) {
+    document.getElementById('boards').activeBoardId = boardId;
+}
+
 function getCurrentBoard() {
     return document.getElementById('boards').activeBoardId;
 }

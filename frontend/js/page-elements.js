@@ -79,6 +79,12 @@ function newBoardAsElement(restApi) {
         const input = document.createElement('input');
         input.id = 'newBoardInput';
         input.addEventListener('blur', newBoardInputBlurImpl);
+        input.addEventListener('keypress', function(event) {
+            if(event.which == 10 || event.which == 13) {
+                input.blur();
+            }
+        });
+
         input.classList.add('hidden');
 
         button.appendChild(input);
@@ -140,7 +146,7 @@ function boardSelectById(restApi) {
 
         if (boardId) {
 
-            document.getElementById('boards').activeBoardId = boardId;
+            setCurrentBoard(boardId);
 
             document.getElementById('input-board-id').value = boardId;
             document.getElementById('btn-show-share-board').removeAttribute('disabled');

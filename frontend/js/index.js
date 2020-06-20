@@ -68,6 +68,41 @@ function bindings(restApi) {
 
 }
 
+function formsSubmittableWithEnter(restApi) {
+
+    // Login
+    document.getElementById('input-login-user-password')
+            .addEventListener('keypress', async(event) => {
+                if(event.which == 10 || event.which == 13) {
+                    login(restApi)(event);
+                }
+            });
+
+    // Create user
+    document.getElementById('input-user-password')
+            .addEventListener('keypress', async(event) => {
+                if(event.which == 10 || event.which == 13) {
+                    createUser(restApi)(event);
+                }
+            });
+
+    // Create column
+    document.getElementById('input-column-name')
+            .addEventListener('keypress', async(event) => {
+                if(event.which == 10 || event.which == 13) {
+                    createColumn(restApi)(event);
+                }
+            });
+
+    // Share board
+    document.getElementById('input-share-user-name')
+            .addEventListener('keypress', async(event) => {
+                if(event.which == 10 || event.which == 13) {
+                    shareBoard(restApi)(event);
+                }
+            });
+}
+
 function getBoards(restApi) {
     restApi.withBoards(buildBoards(restApi));
 }
@@ -79,6 +114,7 @@ function unauthHandler() {
 
 function main() {
     const restApi = createRestApi(unauthHandler);
+    formsSubmittableWithEnter(restApi);
     bindings(restApi);
     getBoards(restApi);
 }
