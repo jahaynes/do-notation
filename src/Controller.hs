@@ -89,6 +89,8 @@ type DoAPI =
                            :> ReqBody '[JSON] MoveTicket
                            :> Post '[JSON] (Authed ())
 
+   :<|> Get '[JSON] ()
+
    :<|> Raw
 
 server :: SecurityApi IO -> StorageApi -> Server DoAPI
@@ -105,7 +107,6 @@ server securityApi storageApi =
                      $ routeCreatePassword securityApi storageApi createPw
                      )
 
-        -- TODO split into withAuthentication & withAuthorisation ?
     :<|> (\mCookie -> handle
                     $ withAuthorisation securityApi mCookie
                     $ routeQueryBoards storageApi
@@ -163,6 +164,8 @@ server securityApi storageApi =
                                   $ withAuthorisation securityApi mCookie
                                   $ \_ -> routeMoveTicket storageApi moveTicketReq
                                   )
+
+    :<|> (throwError $ err301 {errHeaders = [("Location", "/index.html")]})
 
     :<|> serveDirectoryWebApp "frontend"
 
