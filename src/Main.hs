@@ -10,14 +10,9 @@ import Storage.Cassandra.Keyspace
 import Storage.Cassandra.Tables
 import Storage.Sqlite
 import Storage.StorageApi
-import Types.Board
-import Types.Column
-import Types.Ticket
-import Types.User
 
-import Control.Monad      (when)
 import Safe               (readEitherSafe)
-import System.Environment (getArgs, lookupEnv)
+import System.Environment (lookupEnv)
 
 data Implementation = Cassandra
                     | Sqlite
@@ -43,27 +38,7 @@ main = do
     port        <- getPort
     securityApi <- getSecurityApi
     storageApi  <- getStorageApi Sqlite
-    args <- getArgs
-    when (args == ["--sample-data"]) $ do
-        putStrLn "Generating sample data"
-        sampleData storageApi
     runServer port securityApi storageApi
-
-sampleData :: StorageApi -> IO ()
-sampleData storageApi = do
-    b1  <- createBoard storageApi (BoardName "some-board")
-    b2  <- createBoard storageApi (BoardName "board 2")
-    _   <- createUser storageApi (UserId "foo") b1
-    _   <- createUser storageApi (UserId "foo") b2
-
-    ci1 <- createColumn storageApi b1 (ColumnPosition 1) (ColumnName "Wish list")
-    ci2 <- createColumn storageApi b1 (ColumnPosition 2) (ColumnName "In progress")
-    ci3 <- createColumn storageApi b1 (ColumnPosition 3) (ColumnName "Done")
-
-    _ <- createTicket storageApi ci2 (TicketName "ticket name 1") (TicketContent "ticket content 1")
-    _ <- createTicket storageApi ci2 (TicketName "ticket name 2") (TicketContent "ticket content 2")
-    _ <- createTicket storageApi ci2 (TicketName "ticket name 3") (TicketContent "ticket content 3")
-    pure ()
 
 parseEnv :: Read a => String -> IO a
 parseEnv key = get . env <$> lookupEnv key
