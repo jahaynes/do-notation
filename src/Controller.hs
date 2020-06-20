@@ -169,9 +169,9 @@ server securityApi storageApi =
 
     :<|> serveDirectoryWebApp "frontend"
 
-runServer :: SecurityApi IO -> StorageApi -> IO ()
-runServer securityApi storageApi =
-    run 8080 . serve doAPI $ server securityApi storageApi
+runServer :: Int -> SecurityApi IO -> StorageApi -> IO ()
+runServer port securityApi storageApi =
+    run port . serve doAPI $ server securityApi storageApi
 
     where
     doAPI :: Proxy DoAPI

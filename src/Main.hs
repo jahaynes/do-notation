@@ -23,7 +23,10 @@ data Implementation = Cassandra
                     | Sqlite
 
 getSecurityApi :: IO (SecurityApi IO)
-getSecurityApi = parseEnv "JWT_SECRET" >>= createSecurityApi  
+getSecurityApi = parseEnv "JWT_SECRET" >>= createSecurityApi
+
+getPort :: IO Int
+getPort = parseEnv "PORT"
 
 getStorageApi :: Implementation -> IO StorageApi
 getStorageApi Sqlite = createSqlite "data/do-notation.db"
@@ -37,14 +40,14 @@ getStorageApi Cassandra = do
 
 main :: IO ()
 main = do
-
+    port        <- getPort
     securityApi <- getSecurityApi
-    storageApi <- getStorageApi Sqlite
+    storageApi  <- getStorageApi Sqlite
     args <- getArgs
     when (args == ["--sample-data"]) $ do
         putStrLn "Generating sample data"
         sampleData storageApi
-    runServer securityApi storageApi
+    runServer port securityApi storageApi
 
 sampleData :: StorageApi -> IO ()
 sampleData storageApi = do
