@@ -10,9 +10,9 @@ function logout(restApi) {
     };
 }
 
-const showCreateUser =
+const showSignup =
     async (event) => {
-        setVisible(panels.CREATE_USER);
+        setVisible(panels.SIGNUP);
     };
 
 const showCreateColumn =
@@ -135,16 +135,16 @@ const cancelLogin =
         setVisible(panels.NONE);
     };
 
-function createUser(restApi) {
+function signup(restApi) {
     return async (event) => {
         const strName     = document.getElementById('input-user-name').value;
         const strPassword = document.getElementById('input-user-password').value;
-        await restApi.createUser(strName, strPassword);
+        await restApi.signup(strName, strPassword);
         setVisible(panels.NONE);
     };
 }
 
-const cancelCreateUser =
+const cancelSignup =
     async (event) => {
         setVisible(panels.NONE);
     };

@@ -9,7 +9,7 @@
   <link rel="stylesheet" type="text/css" href="css/login.css">
   <link rel="stylesheet" type="text/css" href="css/create-column.css">
   <link rel="stylesheet" type="text/css" href="css/create-tickets.css">
-  <link rel="stylesheet" type="text/css" href="css/create-user.css">
+  <link rel="stylesheet" type="text/css" href="css/signup.css">
   <link rel="stylesheet" type="text/css" href="css/share-board.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
   <section id="controls" class="controls-container container">
     <input id='btn-show-login'         type=button value='Login'                  class='lblbtn'/>
     <input id='btn-logout'             type=button value='Logout'                 class='lblbtn'/>
-    <input id='btn-show-create-user'   type=button value='Create user'            class='lblbtn'/>
+    <input id='btn-show-signup'        type=button value='Sign up'                class='lblbtn'/>
     <input id='btn-show-create-column' type=button value='Create column'          class='lblbtn'/>
     <input id='btn-show-create-ticket' type=button value='Create ticket'          class='lblbtn'/>
     <input id='btn-show-share-board'   type=button value='Share board'   disabled class='lblbtn'/>
@@ -45,15 +45,15 @@
     </form>
   </section>
 
-  <section id="create-user" class="create-user container">
+  <section id="signup" class="signup container">
     <form>
       <label for='input-user-name' class='lblfield'>username</label>
       <input  id='input-user-name' autocapitalize="false"/>
       <label for='input-user-password' class='lblfield'>password</label>
       <input  id='input-user-password' type='password'/>
-      <div id='create-user-commands'>
-        <input id='btn-create-user'        type=button value='Create user' class='lblbtn'/>
-        <input id='btn-cancel-create-user' type=button value='Cancel'      class='lblbtn'/>
+      <div id='signup-commands'>
+        <input id='btn-signup'        type=button value='Sign Up' class='lblbtn'/>
+        <input id='btn-cancel-signup' type=button value='Cancel'      class='lblbtn'/>
       </div>
     </form>
   </section>

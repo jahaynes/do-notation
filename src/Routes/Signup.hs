@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric,
              OverloadedStrings #-}
 
-module Routes.CreatePassword where
+module Routes.Signup where
 
 import Errors
 import Security.Security
@@ -14,17 +14,17 @@ import Control.Monad.Trans.Except
 import Data.Aeson
 import GHC.Generics               (Generic)
 
-data CreatePassword =
-    CreatePassword { cu_username    :: !UserId
-                   , cu_rawpassword :: !RawPassword
-                   } deriving Generic
+data Signup =
+    Signup { s_username    :: !UserId
+           , s_rawpassword :: !RawPassword
+           } deriving Generic
 
-instance FromJSON CreatePassword where
+instance FromJSON Signup where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeCreatePassword :: SecurityApi IO -> StorageApi -> CreatePassword -> ExceptT ErrorResponse IO ()
-routeCreatePassword securityApi storageApi (CreatePassword uname pw) =
+routeSignup :: SecurityApi IO -> StorageApi -> Signup -> ExceptT ErrorResponse IO ()
+routeSignup securityApi storageApi (Signup uname pw) =
     -- TODO catchall too broad
     catchAll "Could not create new user.  Username already taken?" $ do
         (salt, hspw) <- lift (hashPassword securityApi pw)

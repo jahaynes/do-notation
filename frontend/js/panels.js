@@ -4,7 +4,7 @@ const panels = {
     LOGIN:         'login',
     CREATE_COLUMN: 'create-column',
     CREATE_TICKET: 'create-ticket',
-    CREATE_USER:   'create-user',
+    SIGNUP:        'signup',
     SHARE_BOARD:   'share-board'
 }
 
@@ -39,8 +39,8 @@ function setVisible(visible) {
     const createTicket =
         document.getElementById('create-tickets');
 
-    const createUser =
-        document.getElementById('create-user');
+    const signup =
+        document.getElementById('signup');
 
     const shareBoard =
         document.getElementById('share-board');
@@ -48,7 +48,7 @@ function setVisible(visible) {
     login.classList.remove('visible');
     createColumn.classList.remove('visible');
     createTicket.classList.remove('visible');
-    createUser.classList.remove('visible');
+    signup.classList.remove('visible');
     shareBoard.classList.remove('visible');
 
     switch(visible) {
@@ -68,8 +68,8 @@ function setVisible(visible) {
             createTicket.classList.add('visible');
         break;
 
-        case panels.CREATE_USER:
-            createUser.classList.add('visible');
+        case panels.SIGNUP:
+            signup.classList.add('visible');
         break;
 
         case panels.SHARE_BOARD:

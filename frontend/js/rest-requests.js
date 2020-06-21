@@ -2,7 +2,7 @@ function createRestApi(unauthHandler) {
 
     return { "login"        : restLogin
            , "logout"       : restLogout
-           , "createUser"   : restCreateUser
+           , "signup"       : restSignup
            , "withBoards"   : restWithBoards(unauthHandler)
            , "withBoard"    : restWithBoard(unauthHandler)
            , "shareBoard"   : restShareBoard(unauthHandler)
@@ -71,13 +71,13 @@ const restLogout =
         }
     }
 
-const restCreateUser =
+const restSignup =
     async (username, password) => {
         const body = { 'username':    username
                      , 'rawpassword': password
                      };
         const response =
-            await fetch('/user', {
+            await fetch('/signup', {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {

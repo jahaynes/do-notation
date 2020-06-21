@@ -1,15 +1,15 @@
-.create-user.visible {
+.signup.visible {
     display: block;
 }
 
-.create-user {
+.signup {
     display: none;
     background-color:gray;
     padding-top: 1em;
     padding-bottom: 1em;
 }
 
-.create-user input {
+.signup input {
     border: none;
     background-color: beige;
     width: 15rem;
@@ -19,27 +19,27 @@
     font-size: 1rem;
 }
 
-.create-user .lblfield {
+.signup .lblfield {
     display: block;
     margin-top: 1em;
     font-size: 1.3em;
 }
 
-.create-user .lblfield:first-of-type {
+.signup .lblfield:first-of-type {
     margin-top: 0;
 }
 
-#create-user-commands {
+#signup-commands {
     display: flex;
     margin-top: 1em;
     width: 15.5rem;
 }
 
-#create-user-commands input {
+#signup-commands input {
     margin: 0 0 0 1em;
 }
 
-#create-user-commands input:first-of-type {
+#signup-commands input:first-of-type {
     margin-left: 0;
 }
   

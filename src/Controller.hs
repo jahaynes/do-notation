@@ -8,10 +8,10 @@ module Controller (runServer) where
 import Errors
 import Routes.CreateBoard
 import Routes.CreateColumn
-import Routes.CreatePassword
 import Routes.CreateTicket
 import Routes.DeleteBoard
 import Routes.DeleteTicket
+import Routes.Health
 import Routes.QueryBoard
 import Routes.ShareBoard
 import Routes.Login
@@ -19,6 +19,7 @@ import Routes.Logout
 import Routes.MoveTicket
 import Routes.QueryColumn
 import Routes.QueryTicket
+import Routes.Signup
 import Routes.UpdateTicket
 import Security.Authorisation
 import Security.Security
@@ -28,18 +29,21 @@ import Types.BoardId
 import Types.Column
 import Types.Ticket
 
+import Control.Monad.IO.Class   (liftIO)
 import Network.Wai.Handler.Warp (run)
 import Servant
 
 type DoAPI =
 
-        "login" :> ReqBody '[JSON] Login
+        "health" :> Get '[JSON] Health
+
+   :<|> "login" :> ReqBody '[JSON] Login
                 :> Post '[JSON] (Headers '[Header "Set-Cookie" CookieHeader] ())
 
    :<|> "logout" :> Post '[JSON] (Headers '[Header "Set-Cookie" CookieHeader] ())
 
-   :<|> "user" :> ReqBody '[JSON] CreatePassword
-               :> Post '[JSON] ()
+   :<|> "signup" :> ReqBody '[JSON] Signup
+                 :> Post '[JSON] () --TODO could Set-Cookie here to get logged in
 
    :<|> "boards" :> Header "Cookie" CookieHeader
                  :> Get '[JSON] (Authed [(BoardId, BoardName)])
@@ -93,19 +97,20 @@ type DoAPI =
 
    :<|> Raw
 
-server :: SecurityApi IO -> StorageApi -> Server DoAPI
-server securityApi storageApi =
+server :: HealthApi -> SecurityApi IO -> StorageApi -> Server DoAPI
+server healthApi securityApi storageApi =
 
-         (\login -> handle 
+         liftIO (getHealth healthApi)
+
+    :<|> (\login -> handle 
                   $ routeLogin securityApi storageApi login >>= \cookieHeader -> pure $ addHeader cookieHeader ()
                   )
 
     :<|> pure (addHeader routeLogout ())
 
-         -- TODO rename routeSignup ?
-    :<|> (\createPw -> handle
-                     $ routeCreatePassword securityApi storageApi createPw
-                     )
+    :<|> (\signup -> handle
+                   $ routeSignup securityApi storageApi signup
+                   )
 
     :<|> (\mCookie -> handle
                     $ withAuthorisation securityApi mCookie
@@ -169,9 +174,9 @@ server securityApi storageApi =
 
     :<|> serveDirectoryWebApp "frontend"
 
-runServer :: Int -> SecurityApi IO -> StorageApi -> IO ()
-runServer port securityApi storageApi =
-    run port . serve doAPI $ server securityApi storageApi
+runServer :: HealthApi -> Int -> SecurityApi IO -> StorageApi -> IO ()
+runServer healthApi port securityApi storageApi =
+    run port . serve doAPI $ server healthApi securityApi storageApi
 
     where
     doAPI :: Proxy DoAPI

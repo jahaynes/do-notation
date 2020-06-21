@@ -9,8 +9,8 @@ function bindings(restApi) {
     document.getElementById('btn-logout')
             .addEventListener('click', logout(restApi));
 
-    document.getElementById('btn-show-create-user')
-            .addEventListener('click', showCreateUser);
+    document.getElementById('btn-show-signup')
+            .addEventListener('click', showSignup);
 
     document.getElementById('btn-show-create-column')
             .addEventListener('click', showCreateColumn);
@@ -29,13 +29,13 @@ function bindings(restApi) {
     document.getElementById('btn-cancel-login')
             .addEventListener('click', cancelLogin);
 
-    // Create user panel
+    // Signup panel
 
-    document.getElementById('btn-create-user')
-            .addEventListener('click', createUser(restApi));
+    document.getElementById('btn-signup')
+            .addEventListener('click', signup(restApi));
 
-    document.getElementById('btn-cancel-create-user')
-            .addEventListener('click', cancelCreateUser);
+    document.getElementById('btn-cancel-signup')
+            .addEventListener('click', cancelSignup);
 
     // Create column panel
 
@@ -78,11 +78,11 @@ function formsSubmittableWithEnter(restApi) {
                 }
             });
 
-    // Create user
+    // Sign up
     document.getElementById('input-user-password')
             .addEventListener('keypress', async(event) => {
                 if(event.which == 10 || event.which == 13) {
-                    createUser(restApi)(event);
+                    signup(restApi)(event);
                 }
             });
 

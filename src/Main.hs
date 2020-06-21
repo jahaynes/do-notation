@@ -3,8 +3,9 @@
 module Main where
 
 import Controller
+import Routes.Health as H
 import Security.Security
-import Storage.Cassandra.Connection
+import Storage.Cassandra.Connection as C
 import Storage.Cassandra.Queries
 import Storage.Cassandra.Keyspace
 import Storage.Cassandra.Tables
@@ -28,17 +29,18 @@ getStorageApi Sqlite = createSqlite "data/do-notation.db"
 getStorageApi Cassandra = do
     cassandraPort  <- parseEnv "CASS_PORT"
     cassandraHosts <- parseEnv "CASS_HOSTS"
-    create cassandraPort cassandraHosts >>= \c -> do
+    C.create cassandraPort cassandraHosts >>= \c -> do
         createKeyspace c 2
         createTables c
         pure $ createApi c
 
 main :: IO ()
 main = do
+    healthApi   <- H.create
     port        <- getPort
     securityApi <- getSecurityApi
     storageApi  <- getStorageApi Sqlite
-    runServer port securityApi storageApi
+    runServer healthApi port securityApi storageApi
 
 parseEnv :: Read a => String -> IO a
 parseEnv key = get . env <$> lookupEnv key
