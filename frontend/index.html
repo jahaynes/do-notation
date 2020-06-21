@@ -4,23 +4,31 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/header.css">
   <link rel="stylesheet" type="text/css" href="css/boards.css">
   <link rel="stylesheet" type="text/css" href="css/tickets.css">
-  <link rel="stylesheet" type="text/css" href="css/login.css">
-  <link rel="stylesheet" type="text/css" href="css/create-column.css">
-  <link rel="stylesheet" type="text/css" href="css/create-tickets.css">
-  <link rel="stylesheet" type="text/css" href="css/signup.css">
-  <link rel="stylesheet" type="text/css" href="css/share-board.css">
+  <link rel="stylesheet" type="text/css" href="css/panels/login.css">
+  <link rel="stylesheet" type="text/css" href="css/panels/create-column.css">
+  <link rel="stylesheet" type="text/css" href="css/panels/create-tickets.css">
+  <link rel="stylesheet" type="text/css" href="css/panels/signup.css">
+  <link rel="stylesheet" type="text/css" href="css/panels/share-board.css">
 </head>
 <body>
 
-  <section id="controls" class="controls-container container">
-    <input id='btn-show-login'         type=button value='Login'                  class='lblbtn'/>
-    <input id='btn-logout'             type=button value='Logout'                 class='lblbtn'/>
-    <input id='btn-show-signup'        type=button value='Sign up'                class='lblbtn'/>
-    <input id='btn-show-create-column' type=button value='Create column'          class='lblbtn'/>
-    <input id='btn-show-create-ticket' type=button value='Create ticket'          class='lblbtn'/>
-    <input id='btn-show-share-board'   type=button value='Share board'   disabled class='lblbtn'/>
+  <section id="header" class="controls-container container">
+
+    <section class="board-controls-container">
+      <input id='btn-show-create-column' type=button value='Create column'          class='lblbtn'/>
+      <input id='btn-show-create-ticket' type=button value='Create ticket'          class='lblbtn'/>
+      <input id='btn-show-share-board'   type=button value='Share board'   disabled class='lblbtn'/>
+    </section>
+
+    <section class="login-controls-container">
+      <input id='btn-show-login'         type=button value='Login'                  class='lblbtn'/>
+      <input id='btn-logout'             type=button value='Logout'                 class='lblbtn'/>
+      <input id='btn-show-signup'        type=button value='Sign up'                class='lblbtn'/>
+    </section>
+
   </section>
 
   <section id="boards" class="boards-container container">

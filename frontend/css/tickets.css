@@ -12,7 +12,7 @@
 }
 
 .ticket-column {
-    width: 12em;
+    min-width: 10em;
 }
 
 .ticket-li {
