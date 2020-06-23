@@ -85,7 +85,16 @@ const restSignup =
                 }
             });
 
-        const json = await response.json();            
+        switch (response.status) {
+
+            case 200:
+                break;
+
+            case 400:
+                //TODO
+                console.log(await response.text());
+                break;
+        }
     }
 
 function restWithBoards(unauthHandler) {
