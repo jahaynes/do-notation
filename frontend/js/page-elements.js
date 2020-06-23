@@ -146,6 +146,8 @@ function boardSelectById(restApi) {
 
         if (boardId) {
 
+            setVisible(panels.NONE);
+
             setCurrentBoard(boardId);
 
             document.getElementById('input-board-id').value = boardId;
