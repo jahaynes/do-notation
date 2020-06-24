@@ -91,6 +91,8 @@ function ticketSelect(restApi) {
 
         restApi.withTicket(columnId, ticketId,
             function(ticket) {
+                document.getElementById('btn-create-ticket').setAttribute("disabled", true);
+                document.getElementById('btn-update-ticket').removeAttribute("disabled");
                 document.getElementById('input-ticket-name').value = ticket.name;
                 document.getElementById('input-ticket-content').value = ticket.content;
                 const createTicketSection = document.getElementById('create-tickets');

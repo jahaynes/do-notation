@@ -22,6 +22,8 @@ const showCreateColumn =
 
 const showCreateTicket =
     async (event) => {
+        document.getElementById('btn-create-ticket').removeAttribute("disabled");
+        document.getElementById('btn-update-ticket').setAttribute("disabled", true);
         setVisible(panels.CREATE_TICKET);
     };
 

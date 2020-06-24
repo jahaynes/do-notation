@@ -40,7 +40,7 @@
   <section id='login' class='login container'>
     <form>
       <label for='input-login-user-name' class='lblfield'>login username</label>
-      <input  id='input-login-user-name' autocapitalize="false"/>
+      <input  id='input-login-user-name' autocapitalize="off"/>
       <label for='input-login-user-password' class='lblfield'>login password</label>
       <input  id='input-login-user-password' type='password'/>
       <section id='login-error-section'>
@@ -56,12 +56,12 @@
   <section id="signup" class="signup container">
     <form>
       <label for='input-user-name' class='lblfield'>username</label>
-      <input  id='input-user-name' autocapitalize="false"/>
+      <input  id='input-user-name' autocapitalize="off"/>
       <label for='input-user-password' class='lblfield'>password</label>
       <input  id='input-user-password' type='password'/>
       <div id='signup-commands'>
         <input id='btn-signup'        type=button value='Sign Up' class='lblbtn'/>
-        <input id='btn-cancel-signup' type=button value='Cancel'      class='lblbtn'/>
+        <input id='btn-cancel-signup' type=button value='Cancel'  class='lblbtn'/>
       </div>
     </form>
   </section>
@@ -73,10 +73,10 @@
       <label   for='input-ticket-content' class='lblfield'>content</label>
       <textarea id='input-ticket-content'></textarea>
       <div id='create-ticket-commands'>
-        <input id='btn-create-ticket'        type=button value='Add ticket'    class='lblbtn'/>
-        <input id='btn-update-ticket'        type=button value='Update ticket' class='lblbtn'/>
-        <input id='btn-cancel-create-ticket' type=button value='Cancel'        class='lblbtn'/>
-        <input id='btn-delete-ticket'        type=button value='Delete'        class='lblbtn'/>
+        <input id='btn-create-ticket'        type=button value='Add ticket'    disabled=true class='lblbtn'/>
+        <input id='btn-update-ticket'        type=button value='Update ticket' disabled=true class='lblbtn'/>
+        <input id='btn-cancel-create-ticket' type=button value='Cancel'                      class='lblbtn'/>
+        <input id='btn-delete-ticket'        type=button value='Delete'                      class='lblbtn'/>
       </div>
     </form>
   </section>
@@ -87,7 +87,7 @@
       <input  id='input-column-name'/>
       <div id='create-column-commands'>
         <input id='btn-create-column'        type=button value='Create column' class='lblbtn'/>
-        <input id='btn-cancel-create-column' type=button value='Cancel'      class='lblbtn'/>
+        <input id='btn-cancel-create-column' type=button value='Cancel'        class='lblbtn'/>
       </div>
     </form>
   </section>
