@@ -16,7 +16,7 @@ import Data.Text.Encoding (encodeUtf8)
 import Crypto.Hash         
 import Crypto.Random      (MonadRandom, getRandomBytes)
 
-import           Web.JWT      (Signer)
+import           Web.JWT      (EncodeSigner, VerifySigner)
 import qualified Web.JWT as J
 
 data SecurityApi m =
@@ -29,22 +29,23 @@ data SecurityApi m =
 createSecurityApi :: MonadRandom m => Text -> m (SecurityApi m)
 createSecurityApi !jwtSecret = do
 
-    let signer = J.hmacSecret jwtSecret
+    let encodeSigner = J.hmacSecret jwtSecret
+        verifySigner = J.toVerify encodeSigner
 
     pure $ SecurityApi
-               { signAndEncode        = signAndEncodeImpl signer
-               , authenticateJwt      = verifyImpl signer
+               { signAndEncode        = signAndEncodeImpl encodeSigner
+               , authenticateJwt      = verifyImpl verifySigner
                , hashPassword         = hashPasswordImpl
                , hashPasswordWithSalt = hashPasswordWithSaltImpl
                }
 
-signAndEncodeImpl :: Signer -> UserId -> AuthToken
+signAndEncodeImpl :: EncodeSigner -> UserId -> AuthToken
 signAndEncodeImpl signer (UserId userid) =    
     AuthToken . J.encodeSigned signer mempty
               $ mempty { J.sub = J.stringOrURI userid }
 
 --TODO check for some property other than just 'signed'
-verifyImpl :: Signer -> AuthToken -> Maybe UserId
+verifyImpl :: VerifySigner -> AuthToken -> Maybe UserId
 verifyImpl signer (AuthToken t) = do
     token <- J.decodeAndVerifySignature signer t
     uid   <- J.sub . J.claims $ token
