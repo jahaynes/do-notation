@@ -10,6 +10,7 @@ import Types.BoardId
 import Types.Json
 import Types.User
 
+import           Control.Monad              (when)
 import           Control.Monad.Trans.Class  (lift)
 import           Control.Monad.Trans.Except (ExceptT)
 import           Data.Aeson
@@ -44,9 +45,8 @@ routeCreateBoard storageApi (CreateBoard boardName) userId = do
     boardNotAlreadyExists :: ExceptT ErrorResponse IO ()
     boardNotAlreadyExists = do
         boardNames <- map snd <$> lift (getBoards storageApi userId)
-        if boardName `elem` boardNames
-            then err 403 "Board already exists"
-            else pure ()
+        when (boardName `elem` boardNames) $
+            err 403 "Board already exists"
 
     validate :: BoardName -> ExceptT ErrorResponse IO ()
     validate (BoardName bn)

@@ -108,9 +108,7 @@ server healthApi securityApi storageApi =
 
     :<|> pure (addHeader routeLogout ())
 
-    :<|> (\signup -> handle
-                   $ routeSignup securityApi storageApi signup
-                   )
+    :<|> (handle . routeSignup securityApi storageApi)
 
     :<|> (\mCookie -> handle
                     $ withAuthorisation securityApi mCookie
