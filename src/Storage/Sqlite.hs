@@ -56,15 +56,18 @@ createPasswordImpl c userId salt hashedSaltedPassword =
         \ (userId, salt, hashsaltpassword) VALUES \
         \ (     ?,    ?,                ?)        "
 
-    errorHandler e | sqlError e == ErrorConstraint = err' 409 "Could not create user.  User already taken?"
+    errorHandler :: SQLError -> IO (Either ErrorResponse a)
+    errorHandler e
+        | sqlError e == ErrorConstraint = err' 409 "Could not create user.  User already taken?"
+        | otherwise                     = err' 500 "Could not create user."
 
 getSaltAndPasswordImpl :: Connection -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
 getSaltAndPasswordImpl c (UserId userId) =
-    handle <$> query c sqlGetSaltAndPassword (Only userId)
+    handler <$> query c sqlGetSaltAndPassword (Only userId)
     where
-    handle             [] = Nothing
-    handle [(salt, hspw)] = Just (Salt salt, HashedSaltedPassword hspw)
-    handle              _ = error "Too many userids"
+    handler             [] = Nothing
+    handler [(salt, hspw)] = Just (Salt salt, HashedSaltedPassword hspw)
+    handler              _ = error "Too many userids"
     sqlGetSaltAndPassword :: Query
     sqlGetSaltAndPassword =
         " SELECT salt, hashsaltpassword \
@@ -123,6 +126,7 @@ createColumnImpl c boardId pos name = do
         \ (boardid, columnid, position, columnname) VALUES \
         \ (      ?,        ?,        ?,          ?)        "
 
+
 getBoardImpl :: Connection -> BoardId -> IO (Maybe Board)
 getBoardImpl c boardId = 
     query c sqlGetBoard (Only (SqlBoardId boardId)) >>= \case
@@ -154,11 +158,11 @@ getBoardImpl c boardId =
 
 getBoardsImpl :: Connection -> UserId -> IO [(BoardId, BoardName)]
 getBoardsImpl c userId = do
-    boardIds <- map handle <$> query c sqlGetBoards (SqlUserId userId)
+    boardIds <- map handler <$> query c sqlGetBoards (SqlUserId userId)
     catMaybes <$> mapM (withBoardName c) boardIds
     where
-    handle :: SqlBoardId -> BoardId
-    handle (SqlBoardId boardId) = boardId
+    handler :: SqlBoardId -> BoardId
+    handler (SqlBoardId boardId) = boardId
 
     sqlGetBoards :: Query
     sqlGetBoards =
@@ -168,12 +172,12 @@ getBoardsImpl c userId = do
 
 withBoardName :: Connection -> BoardId -> IO (Maybe (BoardId, BoardName))
 withBoardName c boardId =
-    handle <$> query c sqlGetBoardName (SqlBoardId boardId)
+    handler <$> query c sqlGetBoardName (SqlBoardId boardId)
     where
-    handle :: [SqlBoardName] -> Maybe (BoardId, BoardName)
-    handle                       [] = Nothing
-    handle [SqlBoardName boardName] = Just (boardId, boardName)
-    handle                        _ = error "Too many boardnames"
+    handler :: [SqlBoardName] -> Maybe (BoardId, BoardName)
+    handler                       [] = Nothing
+    handler [SqlBoardName boardName] = Just (boardId, boardName)
+    handler                        _ = error "Too many boardnames"
     sqlGetBoardName :: Query
     sqlGetBoardName =
         " SELECT boardname  \
