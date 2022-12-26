@@ -1,4 +1,4 @@
-module Types.Json where
+module Types.Json (chop) where
 
 import Data.List.Split            (splitOn)
 

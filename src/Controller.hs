@@ -142,7 +142,7 @@ server healthApi securityApi storageApi =
 
     :<|> (\mCookie createColumnReq -> handle
                                     $ withAuthorisation securityApi mCookie
-                                    $ routeCreateColumn storageApi createColumnReq
+                                    $ \_ -> routeCreateColumn storageApi createColumnReq
                                     )
 
     :<|> (\mCookie mColumnId mTicketId -> handle

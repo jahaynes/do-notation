@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase,
              OverloadedStrings #-}
 
-module Storage.Sqlite where
+module Storage.Sqlite (createSqlite) where
 
 import Errors
 import Storage.Sqlite.SqliteTypes

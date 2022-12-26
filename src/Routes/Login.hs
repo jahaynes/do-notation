@@ -2,7 +2,7 @@
              DeriveGeneric,
              OverloadedStrings #-}
 
-module Routes.Login where
+module Routes.Login (Login, routeLogin) where
 
 import Security.Authorisation
 import Errors

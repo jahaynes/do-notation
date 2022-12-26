@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric,
              OverloadedStrings #-}
 
-module Routes.Signup where
+module Routes.Signup (Signup, routeSignup) where
 
 import Errors
 import Security.Security

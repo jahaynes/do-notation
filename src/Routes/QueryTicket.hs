@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase,
              OverloadedStrings #-}
 
-module Routes.QueryTicket where
+module Routes.QueryTicket (routeQueryTicket) where
 
 import Errors
 import Storage.StorageApi

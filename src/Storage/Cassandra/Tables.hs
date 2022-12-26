@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Storage.Cassandra.Tables where
+module Storage.Cassandra.Tables (createTables) where
 
 import Storage.Cassandra.Common (params)
 

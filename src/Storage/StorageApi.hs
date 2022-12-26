@@ -1,4 +1,4 @@
-module Storage.StorageApi where
+module Storage.StorageApi (StorageApi (..)) where
 
 import Errors
 import Types.Board

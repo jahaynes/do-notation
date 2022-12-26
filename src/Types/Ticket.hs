@@ -1,7 +1,11 @@
 {-# LANGUAGE DeriveAnyClass,
              DeriveGeneric #-}
 
-module Types.Ticket where
+module Types.Ticket ( Ticket (..)
+                    , TicketContent (..)
+                    , TicketId (..)
+                    , TicketName (..)
+                    ) where
 
 import Types.Json
 

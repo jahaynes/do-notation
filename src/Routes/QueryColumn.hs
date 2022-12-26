@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Routes.QueryColumn where
+module Routes.QueryColumn (routeQueryColumn) where
 
 import Errors
 import Storage.StorageApi

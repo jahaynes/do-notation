@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase
            , OverloadedStrings #-}
 
-module Storage.Cassandra.Queries where
+module Storage.Cassandra.Queries (createApi) where
 
 import Errors
 import Storage.Cassandra.Common (params)

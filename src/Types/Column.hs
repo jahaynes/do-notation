@@ -1,7 +1,11 @@
 {-# LANGUAGE DeriveAnyClass,
              DeriveGeneric   #-}
 
-module Types.Column where
+module Types.Column ( Column (..)
+                    , ColumnId (..)
+                    , ColumnName (..)
+                    , ColumnPosition (..)
+                    ) where
 
 import Types.BoardId
 import Types.Json

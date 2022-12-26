@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns,
              OverloadedStrings #-}
 
-module Security.Security where
+module Security.Security (SecurityApi (..), createSecurityApi) where
 
 import Security.AuthToken
 import Types.User ( HashedSaltedPassword (..)

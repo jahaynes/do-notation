@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric,
              OverloadedStrings #-}
 
-module Routes.DeleteTicket where
+module Routes.DeleteTicket (DeleteTicket, routeDeleteTicket) where
 
 import Errors
 import Storage.StorageApi
