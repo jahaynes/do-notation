@@ -45,6 +45,7 @@ signAndEncodeImpl signer (UserId userid) =
               $ mempty { J.sub = J.stringOrURI userid }
 
 --TODO check for some property other than just 'signed'
+-- JWT secret?
 verifyImpl :: VerifySigner -> AuthToken -> Maybe UserId
 verifyImpl signer (AuthToken t) = do
     token <- J.decodeAndVerifySignature signer t
