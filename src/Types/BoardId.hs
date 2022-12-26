@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass,
              DeriveGeneric   #-}
 
-module Types.BoardId where
+module Types.BoardId (BoardId (..)) where
 
 import Types.Json
 

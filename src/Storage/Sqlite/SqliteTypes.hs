@@ -1,4 +1,13 @@
-module Storage.Sqlite.SqliteTypes where
+module Storage.Sqlite.SqliteTypes ( SqlBoardId (..)
+                                  , SqlBoardName (..)
+                                  , SqlColumnId (..)
+                                  , SqlColumnName (..)
+                                  , SqlColumnPosition (..)
+                                  , SqlColumnRow (..)
+                                  , SqlUserId (..)
+                                  , UserBoard (..)
+                                  , UserRow (..)
+                                  ) where
 
 import Types.Board
 import Types.BoardId

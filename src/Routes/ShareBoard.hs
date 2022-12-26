@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric
            , OverloadedStrings #-}
 
-module Routes.ShareBoard where
+module Routes.ShareBoard (ShareBoard, routeShareBoard) where
 
 import Errors
 import Storage.StorageApi

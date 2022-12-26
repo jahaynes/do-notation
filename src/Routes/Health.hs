@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass
            , DeriveGeneric  #-}
 
-module Routes.Health where
+module Routes.Health (Health, HealthApi (..), create) where
 
 import Types.Json                  (chop)
 

@@ -2,7 +2,7 @@
            , LambdaCase
            , OverloadedStrings #-}
 
-module Routes.CreateTicket where
+module Routes.CreateTicket (CreateTicket, routeCreateTicket) where
 
 import Errors
 import Storage.StorageApi

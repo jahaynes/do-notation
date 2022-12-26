@@ -2,7 +2,7 @@
            , LambdaCase
            , OverloadedStrings #-}
 
-module Routes.CreateColumn where
+module Routes.CreateColumn (CreateColumn, routeCreateColumn) where
 
 import Errors
 import Storage.StorageApi
@@ -10,7 +10,6 @@ import Types.Board
 import Types.BoardId
 import Types.Column
 import Types.Json
-import Types.User
 
 import           Control.Monad.Trans.Class  (lift)
 import           Control.Monad.Trans.Except (ExceptT)
@@ -30,9 +29,8 @@ instance FromJSON CreateColumn where
  
 routeCreateColumn :: StorageApi
                   -> CreateColumn
-                  -> UserId
                   -> ExceptT ErrorResponse IO ColumnId
-routeCreateColumn storageApi (CreateColumn boardId columnName) userId = do
+routeCreateColumn storageApi (CreateColumn boardId columnName) = do
 
     validate columnName
 

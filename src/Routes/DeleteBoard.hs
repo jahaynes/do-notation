@@ -2,7 +2,7 @@
              LambdaCase,
              OverloadedStrings #-}
 
-module Routes.DeleteBoard where
+module Routes.DeleteBoard (DeleteBoard, routeDeleteBoard) where
 
 import Errors
 import Storage.StorageApi

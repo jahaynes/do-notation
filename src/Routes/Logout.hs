@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds, 
              OverloadedStrings #-}
 
-module Routes.Logout where
+module Routes.Logout (routeLogout) where
 
 import Security.Authorisation
 

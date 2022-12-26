@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Storage.Cassandra.Keyspace where
+module Storage.Cassandra.Keyspace (createKeyspace) where
 
 import Storage.Cassandra.Common (params)
 

@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveAnyClass,
              DeriveGeneric   #-}
 
-module Types.Board where
+module Types.Board ( Board (..)
+                   , BoardName (..)
+                   ) where
 
 import Types.BoardId
 import Types.Column

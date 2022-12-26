@@ -1,4 +1,4 @@
-module Storage.Cassandra.Connection where
+module Storage.Cassandra.Connection (create) where
 
 import Prelude hiding (init)
 

@@ -1,4 +1,4 @@
-module Security.AuthToken where
+module Security.AuthToken (AuthToken (..)) where
 
 import Data.Aeson (ToJSON (..))
 import Data.Text  (Text)

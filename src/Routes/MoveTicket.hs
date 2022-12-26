@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric,
              OverloadedStrings #-}
 
-module Routes.MoveTicket where
+module Routes.MoveTicket (MoveTicket, routeMoveTicket) where
 
 import Errors
 import Storage.StorageApi

@@ -1,4 +1,4 @@
-module Storage.Cassandra.Common where
+module Storage.Cassandra.Common (params) where
 
 import Database.CQL.IO
 
