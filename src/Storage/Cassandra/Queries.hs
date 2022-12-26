@@ -62,11 +62,11 @@ createPasswordImpl c (UserId userId) (Salt salt) (HashedSaltedPassword hspw) =
 
 getSaltAndPasswordImpl :: ClientState -> UserId -> IO (Maybe (Salt, HashedSaltedPassword))
 getSaltAndPasswordImpl c (UserId userid) =
-    handle <$> runClient c (query cqlGetSaltAndPassword (defQueryParams One (Identity userid)))
+    handler <$> runClient c (query cqlGetSaltAndPassword (defQueryParams One (Identity userid)))
     where
-    handle                       [] = Nothing
-    handle [(Blob salt, Blob hspw)] = Just (Salt $ LBS.toStrict salt, HashedSaltedPassword $ LBS.toStrict hspw)
-    handle                        _ = error "Too many userid"
+    handler                       [] = Nothing
+    handler [(Blob salt, Blob hspw)] = Just (Salt $ LBS.toStrict salt, HashedSaltedPassword $ LBS.toStrict hspw)
+    handler                        _ = error "Too many userid"
 
     cqlGetSaltAndPassword :: PrepQuery R (Identity Text) (Blob, Blob)
     cqlGetSaltAndPassword =
