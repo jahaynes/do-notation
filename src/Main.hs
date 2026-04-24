@@ -18,7 +18,7 @@ import System.Environment (lookupEnv)
 data Implementation = Cassandra
                     | Sqlite
 
-getSecurityApi :: IO (SecurityApi IO)
+getSecurityApi :: IO SecurityApi
 getSecurityApi = parseEnv "JWT_SECRET" >>= createSecurityApi
 
 getPort :: IO Int

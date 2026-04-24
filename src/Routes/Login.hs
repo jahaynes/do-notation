@@ -12,7 +12,7 @@ import Storage.StorageApi
 import Types.Json         (chop)
 import Types.User         (UserId, RawPassword)
 
-import Control.Monad.Trans.Class  (lift)
+import Control.Monad.IO.Class     (MonadIO, liftIO)
 import Control.Monad.Trans.Except
 import Data.Aeson
 import Data.Binary.Builder
@@ -31,19 +31,20 @@ instance FromJSON Login where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeLogin :: SecurityApi m
+routeLogin :: (MonadIO m) => SecurityApi
            -> StorageApi
            -> Login
-           -> ExceptT ErrorResponse IO CookieHeader
+           -> ExceptT ErrorResponse m CookieHeader
 routeLogin securityApi storageApi (Login uname pw) = do
-    maybeSaltPw <- lift (getSaltAndPassword storageApi uname)
+    maybeSaltPw <- liftIO (getSaltAndPassword storageApi uname)
     case maybeSaltPw of
         Nothing -> err 401 "Bad username or password."
         Just (salt, storedPw) ->
             let checkedPw = hashPasswordWithSalt securityApi salt pw
             in if checkedPw == storedPw
-                   then let (AuthToken authToken) = signAndEncode securityApi uname
-                            cookie = CookieHeader
+                   then do
+                        AuthToken authToken <- liftIO $ signAndEncode securityApi uname
+                        let cookie = CookieHeader
                                    . decodeUtf8
                                    . toStrict
                                    . toLazyByteString
@@ -55,5 +56,5 @@ routeLogin securityApi storageApi (Login uname pw) = do
                                                       , setCookiePath     = Just "/"
                                                       , setCookieSameSite = Just sameSiteStrict
                                                       , setCookieValue    = encodeUtf8 authToken }
-                        in pure cookie
+                        pure cookie
                 else err 401 "Bad username or password."

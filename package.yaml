@@ -22,7 +22,9 @@ dependencies:
 - cql-io
 - cryptonite
 - deepseq
-- jwt
+- jose
+- lens
+- mtl
 - memory
 - network
 - safe

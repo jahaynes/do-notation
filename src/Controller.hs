@@ -97,7 +97,7 @@ type DoAPI =
 
    :<|> Raw
 
-server :: HealthApi -> SecurityApi IO -> StorageApi -> Server DoAPI
+server :: HealthApi -> SecurityApi -> StorageApi -> Server DoAPI
 server healthApi securityApi storageApi =
 
          liftIO (getHealth healthApi)
@@ -172,7 +172,7 @@ server healthApi securityApi storageApi =
 
     :<|> serveDirectoryWebApp "frontend"
 
-runServer :: HealthApi -> Int -> SecurityApi IO -> StorageApi -> IO ()
+runServer :: HealthApi -> Int -> SecurityApi -> StorageApi -> IO ()
 runServer healthApi port securityApi storageApi =
     run port . serve doAPI $ server healthApi securityApi storageApi
 

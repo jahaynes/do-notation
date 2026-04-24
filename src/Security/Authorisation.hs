@@ -17,6 +17,7 @@ import Data.Text                  (Text)
 import Data.Text.Encoding         (encodeUtf8, decodeUtf8')
 import Web.Cookie
 import Servant                    (FromHttpApiData (..), ToHttpApiData(..))
+import Control.Monad.IO.Class     (MonadIO, liftIO)
 
 newtype CookieHeader =
     CookieHeader Text
@@ -32,22 +33,23 @@ instance ToJSON a => ToJSON (Authed a) where
 instance FromHttpApiData CookieHeader where
     parseUrlPiece ch = CookieHeader <$> parseUrlPiece ch
 
-withAuthorisation :: Monad m => SecurityApi n
+withAuthorisation :: MonadIO m => SecurityApi
                              -> Maybe CookieHeader
                              -> (UserId -> ExceptT ErrorResponse m a)
                              -> ExceptT ErrorResponse m (Authed a)
 withAuthorisation securityApi mCookieHeader handler = do
 
     cookieHeader <- case mCookieHeader of
-                        Nothing           -> err 401 "No authorisation supplied."
-                        Just cookieHeader -> pure cookieHeader
+                         Nothing           -> err 401 "No authorisation supplied."
+                         Just cookieHeader -> pure cookieHeader
 
     authToken <- case getAuthTokenCookie cookieHeader of
                      Left e -> let msg = "Could not parse auth: " <> e
-                               in err 400 msg
+                                in err 400 msg
                      Right r -> pure r
 
-    case authenticateJwt securityApi authToken of
+    mUserId <- liftIO $ authenticateJwt securityApi authToken
+    case mUserId of
         Nothing     -> err 401 "Auth token rejected."
         Just userId -> Authed <$> handler userId
 

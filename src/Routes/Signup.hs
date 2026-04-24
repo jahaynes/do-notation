@@ -9,7 +9,7 @@ import Storage.StorageApi
 import Types.Json         (chop)
 import Types.User         (UserId (..), RawPassword)
 
-import           Control.Monad.Trans.Class       (lift)
+import           Control.Monad.IO.Class          (liftIO)
 import           Control.Monad.Trans.Except 
 import           Data.Aeson
 import qualified Data.Text                  as T
@@ -24,14 +24,14 @@ instance FromJSON Signup where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = chop
                                                 , unwrapUnaryRecords = True }
 
-routeSignup :: SecurityApi IO -> StorageApi -> Signup -> ExceptT ErrorResponse IO ()
+routeSignup :: SecurityApi -> StorageApi -> Signup -> ExceptT ErrorResponse IO ()
 routeSignup securityApi storageApi (Signup userId pw) = do
 
     validate userId
 
     -- TODO catchall too broad
     catchAll "Could not create new user.  Username already taken?" $ do
-        (salt, hspw) <- lift (hashPassword securityApi pw)
+        (salt, hspw) <- liftIO (hashPassword securityApi pw)
         ExceptT (createPassword storageApi userId salt hspw)
 
     where
